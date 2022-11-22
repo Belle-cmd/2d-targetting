@@ -4,20 +4,28 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 
 public class BlobView extends StackPane implements BlobModelListener, IModelListener {
     GraphicsContext gc;
+
     Canvas myCanvas;
+
     BlobModel model;
+
     InteractionModel iModel;
+
+    /** Stores the font style used to display a blob's order number */
+    private Font font;
 
     public BlobView() {
         // prepare canvas
         myCanvas = new Canvas(800,800);
         gc = myCanvas.getGraphicsContext2D();
-        gc.setFill(Color.ORANGE);
-        gc.fillRect(100,100,200,200);
+        font = new Font(15);
+        gc.setFont(font);
 
+        this.setStyle("-fx-background-color: #b5e8e3;");  // set color of the background
         this.getChildren().add(myCanvas);
     }
 
@@ -27,11 +35,13 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
 
         model.getBlobs().forEach(b -> {
             if (b == iModel.getSelected()) {
-                gc.setFill(Color.TOMATO);
+                gc.setFill(Color.PINK);
             } else {
-                gc.setFill(Color.BEIGE);
+                gc.setFill(Color.STEELBLUE);
             }
             gc.fillOval(b.x-b.r,b.y-b.r,b.r*2,b.r*2);
+            gc.setFill(Color.BLACK);
+            gc.fillText(String.valueOf(b.counter), b.x-3,b.y+3);
         });
     }
 

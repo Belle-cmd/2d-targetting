@@ -2,12 +2,26 @@ package com.example.asn4;
 
 public class Blob {
     double x,y;
+
     double r;
 
+    /** Stands for the order number of blobs created */
+    private static int orderCounter = 0;
+
+    int counter = 0;
+
+
+    /**
+     * Constructor methods
+     * @param nx mouseX position
+     * @param ny mouseY position
+     */
     public Blob(double nx, double ny) {
         x = nx;
         y = ny;
         r = 50;
+        orderCounter++;
+        counter = orderCounter;
     }
 
     public void move(double dx, double dy) {
