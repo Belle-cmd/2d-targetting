@@ -1,7 +1,9 @@
 package com.example.asn4;
 
+import javafx.beans.Observable;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -18,15 +20,30 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
     /** Stores the font style used to display a blob's order number */
     private Font font;
 
-    public BlobView() {
+    /** Stores the width of the canvas */
+    private double viewWidth;
+
+    public BlobView(double vWidth) {
         // prepare canvas
-        myCanvas = new Canvas(800,800);
+        myCanvas = new Canvas(vWidth,1080);
         gc = myCanvas.getGraphicsContext2D();
+
         font = new Font(15);
         gc.setFont(font);
 
+        this.widthProperty().addListener(this::setCanvasSize);
         this.setStyle("-fx-background-color: #b5e8e3;");  // set color of the background
         this.getChildren().add(myCanvas);
+    }
+
+    /**
+     * Adjust canvas size based on resizing done by the user
+     */
+    private void setCanvasSize(Observable observable, Number oldVal, Number newVal) {
+        viewWidth = newVal.doubleValue();
+        myCanvas.setWidth(viewWidth);
+        iModel.setViewWidth(viewWidth);
+        draw();
     }
 
     private void draw() {
@@ -64,8 +81,6 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
     }
 
     public void setController(BlobController controller) {
-        // everytime the mouse presses, releases, or drags in the canvas, the controller fires up,
-        // regardless if it's on a blob or not!
         myCanvas.setOnMousePressed(controller::handlePressed);
         myCanvas.setOnMouseDragged(controller::handleDragged);
         myCanvas.setOnMouseReleased(controller::handleReleased);
