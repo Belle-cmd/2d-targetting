@@ -29,11 +29,15 @@ public class Blob {
         y += dy;
     }
 
+    public boolean contains(double cx, double cy) {
+        return dist(cx,cy,x,y) <= r;
+    }
+
     /**
      * Distance of the mouse from the blob
      */
-    public boolean contains(double cx, double cy) {
-        return dist(cx,cy,x,y) <= r;
+    public boolean contains(double cx, double cy, double cr) {
+        return dist(cx,cy,x,y) <= (r + cr);
     }
 
     private double dist(double x1,double y1,double x2, double y2) {

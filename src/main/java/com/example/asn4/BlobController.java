@@ -2,6 +2,8 @@ package com.example.asn4;
 
 import javafx.scene.input.MouseEvent;
 
+import java.util.ArrayList;
+
 public class BlobController {
     BlobModel model;
     InteractionModel iModel;
@@ -28,8 +30,19 @@ public class BlobController {
             case READY -> {
                 // checks if user pressed a blob or not
                 if (model.hitBlob(event.getX(),event.getY())) {
-                    Blob b = model.whichHit(event.getX(),event.getY());
-                    iModel.setSelected(b);  // change the selected blob's colour
+
+                    ArrayList<Blob> hitList = model.hitArea(event.getX(), event.getY(), iModel.getCursorRadius());
+                    if (hitList.size() > 0) {
+                        if (event.isShiftDown()) {
+                            iModel.select(hitList);
+                        } else {
+                            if (!iModel.allSelectedBlobs(hitList)) {
+                                iModel.clearBlobList();
+                                iModel.select(hitList);
+                            }
+                        }
+                    }
+
                     prevX = event.getX();
                     prevY = event.getY();
                     currentState = State.DRAGGING;
@@ -56,7 +69,7 @@ public class BlobController {
                 prevX = event.getX();
                 prevY = event.getY();
 
-                model.moveBlob(iModel.getSelected(), dX,dY);
+                model.moveBlobs(iModel.getSelectedBlobs(), dX,dY);
             }
         }
     }
@@ -71,7 +84,7 @@ public class BlobController {
             }
             // user releases the mouse when it isn't holding a blob, just go back to ready state
             case DRAGGING -> {
-                iModel.unselect();
+//                iModel.unselect();
                 currentState = State.READY;
             }
         }
