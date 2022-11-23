@@ -24,7 +24,6 @@ public class BlobController {
     }
 
     public void handlePressed(MouseEvent event) {
-        System.out.println("Handle pressed!");
         switch (currentState) {
             case READY -> {
                 // checks if user pressed a blob or not
@@ -35,14 +34,16 @@ public class BlobController {
                     prevY = event.getY();
                     currentState = State.DRAGGING;
                 } else {
-                    currentState = State.PREPARE_CREATE;
+                    // enable blob creation at shift key press (remove if-statement for multiple selections)
+                    if (event.isShiftDown()) {
+                        currentState = State.PREPARE_CREATE;
+                    }
                 }
             }
         }
     }
 
     public void handleDragged(MouseEvent event) {
-        System.out.println("Handle dragged!");
         switch (currentState) {
             case PREPARE_CREATE -> {
                 // go back to ready state since user just pressed the canvas (not a blob) and dragged somewhere
@@ -61,7 +62,6 @@ public class BlobController {
     }
 
     public void handleReleased(MouseEvent event) {
-        System.out.println("Handle released!");
         switch (currentState) {
             // user releases the mouse while holding a blob; place blob into the canvas
             // model will increase its blob which will initiate view to draw blob on canvas
