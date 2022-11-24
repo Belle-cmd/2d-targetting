@@ -60,7 +60,7 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
 
 //            // for multiple blob selection
 //            if (iModel.isSelected(b)) {
-//                gc.setFill(Color.PINK);
+//                gc.setFill(Color.ORCHID);
 //            } else {
 //                gc.setFill(Color.STEELBLUE);
 //            }
@@ -89,6 +89,12 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
     }
 
     public void setController(BlobController controller) {
+        myCanvas.setFocusTraversable(true);
+        myCanvas.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.DELETE) {
+                controller.deleteBlobs();
+            }
+        });
         myCanvas.setOnMousePressed(controller::handlePressed);
         myCanvas.setOnMouseDragged(controller::handleDragged);
         myCanvas.setOnMouseReleased(controller::handleReleased);

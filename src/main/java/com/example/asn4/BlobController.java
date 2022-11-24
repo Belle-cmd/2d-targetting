@@ -1,5 +1,7 @@
 package com.example.asn4;
 
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 
 import java.util.ArrayList;
@@ -25,6 +27,14 @@ public class BlobController {
         iModel = newIModel;
     }
 
+    public void deleteBlobs() {
+        if (iModel.getSelected() != null) {
+            Blob singleBlob = iModel.getSelected();
+            model.deleteBlob(singleBlob);
+            iModel.unselect();
+        }
+    }
+
     public void handlePressed(MouseEvent event) {
         switch (currentState) {
             case READY -> {
@@ -32,6 +42,7 @@ public class BlobController {
                 if (model.hitBlob(event.getX(),event.getY())) {
                     Blob b = model.whichHit(event.getX(),event.getY());
                     iModel.setSelected(b);
+
 //                    // multiple blob selection
 //                    ArrayList<Blob> hitList = model.hitArea(event.getX(), event.getY(), iModel.getCursorRadius());
 //                    if (hitList.size() > 0) {
@@ -87,7 +98,6 @@ public class BlobController {
             }
             // user releases the mouse when it isn't holding a blob, just go back to ready state
             case DRAGGING -> {
-                iModel.unselect();  // for single blob selection
                 currentState = State.READY;
             }
         }

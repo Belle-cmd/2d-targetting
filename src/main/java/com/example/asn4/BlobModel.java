@@ -50,6 +50,12 @@ public class BlobModel {
         notifySubscribers();
     }
 
+    public void deleteBlob(Blob blob) {
+        blobs.remove(blob);
+        System.out.println("Blob deleted in the model");
+        notifySubscribers();
+    }
+
     /**
      * Checks if the mouse is within the blob hitbox
      */
