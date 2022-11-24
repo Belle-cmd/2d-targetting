@@ -60,10 +60,12 @@ public class BlobController {
                     prevY = event.getY();
                     currentState = State.DRAGGING;
                 } else {
-                    // enable blob creation at shift key press (remove if-statement for multiple selections)
                     if (event.isShiftDown()) {
+                        // enable blob creation at shift key press (remove if-statement for multiple selections)
                         currentState = State.PREPARE_CREATE;
                     }
+                    // when the user clicks on the background, blob selection disappears
+                    iModel.unselect();
                 }
             }
         }

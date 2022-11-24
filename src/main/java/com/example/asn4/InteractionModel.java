@@ -77,6 +77,7 @@ public class InteractionModel {
 
     public void unselect() {
         selected = null;
+        notifySubscribers();
     }
 
 
