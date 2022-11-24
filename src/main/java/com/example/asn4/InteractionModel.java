@@ -16,6 +16,10 @@ public class InteractionModel {
     /** radius of the circle following the mouse around */
     private double areaRadius = 75;
 
+    /** stores a singly selected blob */
+    private Blob selected;
+
+
 
 
     /**
@@ -57,7 +61,29 @@ public class InteractionModel {
     }
 
 
-    // methods for manipulating data
+
+
+
+    // methods for single blob selection
+
+    public Blob getSelected() {
+        return selected;
+    }
+
+    public void setSelected(Blob b) {
+        selected = b;
+        notifySubscribers();
+    }
+
+    public void unselect() {
+        selected = null;
+    }
+
+
+
+
+
+    // methods for multiple blob selection
 
     /**
      * Checks if a given blob is part of iModel's selected blobs list
@@ -67,7 +93,6 @@ public class InteractionModel {
     public boolean isSelected(Blob b) {
         return selectedBlobs.contains(b);
     }
-
 
     /**
      * The selected blobs in the controller are stored into the iModel's list of selected blobs, so that more

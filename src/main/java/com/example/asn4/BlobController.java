@@ -30,18 +30,20 @@ public class BlobController {
             case READY -> {
                 // checks if user pressed a blob or not
                 if (model.hitBlob(event.getX(),event.getY())) {
-
-                    ArrayList<Blob> hitList = model.hitArea(event.getX(), event.getY(), iModel.getCursorRadius());
-                    if (hitList.size() > 0) {
-                        if (event.isShiftDown()) {
-                            iModel.select(hitList);
-                        } else {
-                            if (!iModel.allSelectedBlobs(hitList)) {
-                                iModel.clearBlobList();
-                                iModel.select(hitList);
-                            }
-                        }
-                    }
+                    Blob b = model.whichHit(event.getX(),event.getY());
+                    iModel.setSelected(b);
+//                    // multiple blob selection
+//                    ArrayList<Blob> hitList = model.hitArea(event.getX(), event.getY(), iModel.getCursorRadius());
+//                    if (hitList.size() > 0) {
+//                        if (event.isShiftDown()) {
+//                            iModel.select(hitList);
+//                        } else {
+//                            if (!iModel.allSelectedBlobs(hitList)) {
+//                                iModel.clearBlobList();
+//                                iModel.select(hitList);
+//                            }
+//                        }
+//                    }
 
                     prevX = event.getX();
                     prevY = event.getY();
@@ -69,7 +71,8 @@ public class BlobController {
                 prevX = event.getX();
                 prevY = event.getY();
 
-                model.moveBlobs(iModel.getSelectedBlobs(), dX,dY);
+                model.moveBlob(iModel.getSelected(), dX,dY);
+//                model.moveBlobs(iModel.getSelectedBlobs(), dX,dY);
             }
         }
     }
@@ -84,7 +87,7 @@ public class BlobController {
             }
             // user releases the mouse when it isn't holding a blob, just go back to ready state
             case DRAGGING -> {
-//                iModel.unselect();
+                iModel.unselect();  // for single blob selection
                 currentState = State.READY;
             }
         }

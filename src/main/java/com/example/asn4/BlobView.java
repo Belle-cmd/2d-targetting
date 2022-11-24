@@ -51,11 +51,19 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
         gc.clearRect(0,0,myCanvas.getWidth(),myCanvas.getHeight());
 
         model.getBlobs().forEach(b -> {
-            if (iModel.isSelected(b)) {
-                gc.setFill(Color.PINK);
+            // for single blob selection
+            if (b == iModel.getSelected()) {
+                gc.setFill(Color.ORCHID);
             } else {
                 gc.setFill(Color.STEELBLUE);
             }
+
+//            // for multiple blob selection
+//            if (iModel.isSelected(b)) {
+//                gc.setFill(Color.PINK);
+//            } else {
+//                gc.setFill(Color.STEELBLUE);
+//            }
             gc.fillOval(b.x-b.r,b.y-b.r,b.r*2,b.r*2);
             gc.setFill(Color.BLACK);
             gc.fillText(String.valueOf(b.counter), b.x-3,b.y+3);

@@ -40,6 +40,11 @@ public class BlobModel {
         notifySubscribers();
     }
 
+    public void moveBlob(Blob b, double dx, double dy) {
+        b.move(dx,dy);
+        notifySubscribers();
+    }
+
     public void moveBlobs(ArrayList<Blob> blobs, double dX, double dY) {
         blobs.forEach(b -> b.move(dX, dY));
         notifySubscribers();
