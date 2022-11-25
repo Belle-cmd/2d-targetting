@@ -15,6 +15,8 @@ public class BlobController {
     enum State {READY,PREPARE_CREATE, DRAGGING}  // from interaction state model
     State currentState = State.READY;
 
+    private double beforeShiftX, beforeShiftY;
+
     public BlobController() {
 
     }
@@ -46,7 +48,7 @@ public class BlobController {
 //                    // multiple blob selection
 //                    ArrayList<Blob> hitList = model.hitArea(event.getX(), event.getY(), iModel.getCursorRadius());
 //                    if (hitList.size() > 0) {
-//                        if (event.isShiftDown()) {
+//                        if (event.isControlDown()) {
 //                            iModel.select(hitList);
 //                        } else {
 //                            if (!iModel.allSelectedBlobs(hitList)) {
@@ -58,6 +60,8 @@ public class BlobController {
 
                     prevX = event.getX();
                     prevY = event.getY();
+                    beforeShiftX = prevX;
+                    beforeShiftY = prevY;
                     currentState = State.DRAGGING;
                 } else {
                     if (event.isShiftDown()) {
@@ -83,6 +87,15 @@ public class BlobController {
                 dY = event.getY() - prevY;
                 prevX = event.getX();
                 prevY = event.getY();
+
+                if (event.isShiftDown()) {
+                    if (beforeShiftX < prevX) {
+                        iModel.getSelected().r += 1;  // at mouse drag to the right, increase blob size
+                    }
+                    if (beforeShiftX > prevX && iModel.getSelected().r != 5) {
+                        iModel.getSelected().r -= 1;  // at mouse drag to the left, decrease blob size
+                    }
+                }
 
                 model.moveBlob(iModel.getSelected(), dX,dY);
 //                model.moveBlobs(iModel.getSelectedBlobs(), dX,dY);
