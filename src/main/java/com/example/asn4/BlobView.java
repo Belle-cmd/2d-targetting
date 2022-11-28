@@ -9,13 +9,18 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
 public class BlobView extends StackPane implements BlobModelListener, IModelListener {
-    GraphicsContext gc;
 
-    Canvas myCanvas;
+    /** pen abstraction for drawing blobs */
+    private GraphicsContext gcBlobs;
 
-    BlobModel model;
+    /** pen abstraction for the selection tools (lasso, rectangle) */
+    private GraphicsContext gcSelection;
 
-    InteractionModel iModel;
+    private Canvas myCanvas;
+
+    private BlobModel model;
+
+    private InteractionModel iModel;
 
     /** Stores the font style used to display a blob's order number */
     private Font font;
@@ -26,10 +31,11 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
     public BlobView(double vWidth) {
         // prepare canvas
         myCanvas = new Canvas(vWidth,1080);
-        gc = myCanvas.getGraphicsContext2D();
+        gcBlobs = myCanvas.getGraphicsContext2D();
+        gcSelection = myCanvas.getGraphicsContext2D();  // gc for lasso tool and rectangle tool
 
         font = new Font(15);
-        gc.setFont(font);
+        gcBlobs.setFont(font);
 
         this.widthProperty().addListener(this::setCanvasSize);
         this.setStyle("-fx-background-color: #b5e8e3;");  // set color of the background
@@ -43,31 +49,32 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
         viewWidth = newVal.doubleValue();
         myCanvas.setWidth(viewWidth);
         iModel.setViewWidth(viewWidth);
-        draw();
+        drawBlobs();
     }
 
-    private void draw() {
+    private void drawBlobs() {
         // Clears a portion of the canvas with a transparent color value
-        gc.clearRect(0,0,myCanvas.getWidth(),myCanvas.getHeight());
+        gcBlobs.clearRect(0,0,myCanvas.getWidth(),myCanvas.getHeight());
 
         model.getBlobs().forEach(b -> {
             // for single blob selection
             if (b == iModel.getSelected()) {
-                gc.setFill(Color.ORCHID);
+                gcBlobs.setFill(Color.ORCHID);
             } else {
-                gc.setFill(Color.STEELBLUE);
+                gcBlobs.setFill(Color.STEELBLUE);
             }
 
-//            // for multiple blob selection
-//            if (iModel.isSelected(b)) {
-//                gc.setFill(Color.ORCHID);
-//            } else {
-//                gc.setFill(Color.STEELBLUE);
-//            }
-            gc.fillOval(b.x-b.r,b.y-b.r,b.r*2,b.r*2);
-            gc.setFill(Color.BLACK);
-            gc.fillText(String.valueOf(b.counter), b.x-3,b.y+3);
+            gcBlobs.fillOval(b.x-b.r,b.y-b.r,b.r*2,b.r*2);
+            gcBlobs.setFill(Color.BLACK);
+            gcBlobs.fillText(String.valueOf(b.counter), b.x-3,b.y+3);
         });
+    }
+
+    private void drawSelection() {
+        gcSelection.setStroke(Color.GREEN);  // for rectangle
+        gcSelection.strokeRect(iModel.getBeforeLassoRectX(), iModel.getGetBeforeLassoRectY(),
+                iModel.getCursorX() - iModel.getBeforeLassoRectX(),
+                iModel.getCursorY() - iModel.getGetBeforeLassoRectY());
     }
 
     public void setModel(BlobModel newModel) {
@@ -80,13 +87,20 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
 
     @Override
     public void modelChanged() {
-        draw();
+        drawBlobs();
     }
 
     @Override
     public void iModelChanged() {
-        draw();
+        drawBlobs();
     }
+
+    @Override
+    public void iModelChangedSelection() {
+        drawBlobs();
+        drawSelection();
+    }
+
 
     public void setController(BlobController controller) {
         myCanvas.setFocusTraversable(true);

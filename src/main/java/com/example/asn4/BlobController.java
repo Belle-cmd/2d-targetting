@@ -1,21 +1,27 @@
 package com.example.asn4;
 
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 
-import java.util.ArrayList;
-
 public class BlobController {
-    BlobModel model;
-    InteractionModel iModel;
-    double prevX,prevY;
-    double dX,dY;
 
-    enum State {READY,PREPARE_CREATE, DRAGGING}  // from interaction state model
+    private BlobModel model;
+
+    private InteractionModel iModel;
+
+    private double prevX,prevY;
+
+    private  double dX,dY;
+
+    private enum State {READY,PREPARE_CREATE, DRAGGING_BLOB, DRAGGING_TOOL}  // from interaction state model
     State currentState = State.READY;
 
+    /** Stores the mouse position at the end of a mouse press event, just before a mouse drag event starts */
     private double beforeShiftX, beforeShiftY;
+
+
+
+
+
 
     public BlobController() {
 
@@ -45,28 +51,25 @@ public class BlobController {
                     Blob b = model.whichHit(event.getX(),event.getY());
                     iModel.setSelected(b);
 
-//                    // multiple blob selection
-//                    ArrayList<Blob> hitList = model.hitArea(event.getX(), event.getY(), iModel.getCursorRadius());
-//                    if (hitList.size() > 0) {
-//                        if (event.isControlDown()) {
-//                            iModel.select(hitList);
-//                        } else {
-//                            if (!iModel.allSelectedBlobs(hitList)) {
-//                                iModel.clearBlobList();
-//                                iModel.select(hitList);
-//                            }
-//                        }
-//                    }
-
                     prevX = event.getX();
                     prevY = event.getY();
-                    beforeShiftX = prevX;
+
+                    beforeShiftX = prevX;  // save the current mouse position before resizing blobs
                     beforeShiftY = prevY;
-                    currentState = State.DRAGGING;
+
+                    currentState = State.DRAGGING_BLOB;
                 } else {
                     if (event.isShiftDown()) {
                         // enable blob creation at shift key press (remove if-statement for multiple selections)
                         currentState = State.PREPARE_CREATE;
+                    }
+                    if (event.isControlDown()) {
+                        // when mouse press occurs in canvas, saves the current mouse position
+                        // for drawing the rectangle selection tool
+                        iModel.setBeforeLassoRectX(event.getX());
+                        iModel.setGetBeforeLassoRectY(event.getY());
+
+                        currentState = State.DRAGGING_TOOL;
                     }
                     // when the user clicks on the background, blob selection disappears
                     iModel.unselect();
@@ -81,7 +84,9 @@ public class BlobController {
                 // go back to ready state since user just pressed the canvas (not a blob) and dragged somewhere
                 currentState = State.READY;
             }
-            case DRAGGING -> {
+            case DRAGGING_BLOB -> {
+                // the user will either move blob(s) or resize blob(s)
+
                 // update the coordinates to reposition the blob
                 dX = event.getX() - prevX;
                 dY = event.getY() - prevY;
@@ -100,6 +105,10 @@ public class BlobController {
                 model.moveBlob(iModel.getSelected(), dX,dY);
 //                model.moveBlobs(iModel.getSelectedBlobs(), dX,dY);
             }
+            case DRAGGING_TOOL -> {
+                // the user will use either the lasso tool or the rectangle tool to select/unselect blobs
+                iModel.setCursorRedraw(event.getX(), event.getY());
+            }
         }
     }
 
@@ -111,8 +120,7 @@ public class BlobController {
                 model.addBlob(event.getX(),event.getY());
                 currentState = State.READY;
             }
-            // user releases the mouse when it isn't holding a blob, just go back to ready state
-            case DRAGGING -> {
+            case DRAGGING_BLOB, DRAGGING_TOOL -> {
                 currentState = State.READY;
             }
         }

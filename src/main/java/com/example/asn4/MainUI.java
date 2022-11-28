@@ -19,7 +19,8 @@ public class MainUI extends StackPane {
         controller.setIModel(iModel);
         view.setIModel(iModel);
         model.addSubscriber(view);
-        iModel.addSubscriber(view);
+        iModel.addBlobSubscriber(view);
+        iModel.addSelectionSubscriber(view);  // enables selection to be drawn in canvas
         view.setController(controller);
 
         this.getChildren().add(view);
