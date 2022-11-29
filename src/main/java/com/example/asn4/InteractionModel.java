@@ -1,5 +1,7 @@
 package com.example.asn4;
 
+import javafx.geometry.Point2D;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +34,12 @@ public class InteractionModel {
     /** Stores the mouse cursor (x, y) values */
     private double cursorX, cursorY;
 
+    /** Store points of the lasso tool */
+    private List<Point2D> points;
+
+    /** Indicates when drawing circles is currently occurring or not */
+    private boolean pathComplete;
+
 
 
     /**
@@ -41,6 +49,7 @@ public class InteractionModel {
         blobSubscribers = new ArrayList<>();
         selectionSubscribers = new ArrayList<>();
         selectedBlobs = new ArrayList<>();
+        points = new ArrayList<>();
     }
 
 
@@ -104,6 +113,18 @@ public class InteractionModel {
         notifySelectionSubscribers();
     }
 
+    public boolean isPathComplete() {
+        return pathComplete;
+    }
+
+    public void setPathComplete(boolean pathComplete) {
+        this.pathComplete = pathComplete;
+        notifySelectionSubscribers();
+    }
+
+    public List<Point2D> getPoints() {
+        return points;
+    }
 
 
 
@@ -175,6 +196,21 @@ public class InteractionModel {
      */
     public boolean allSelectedBlobs(ArrayList<Blob> hitList) {
         return selectedBlobs.containsAll(hitList);
+    }
+
+
+    /**
+     * Add a new point to the list of points that make up the lasso tool
+     * @param point2D point
+     */
+    public void addPoints(Point2D point2D) {
+        points.add(point2D);
+        notifySelectionSubscribers();
+    }
+
+    public void clearPoints() {
+        points.clear();
+        notifySelectionSubscribers();
     }
 }
 

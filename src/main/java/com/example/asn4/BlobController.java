@@ -1,5 +1,6 @@
 package com.example.asn4;
 
+import javafx.geometry.Point2D;
 import javafx.scene.input.MouseEvent;
 
 public class BlobController {
@@ -68,6 +69,7 @@ public class BlobController {
                         // for drawing the rectangle selection tool
                         iModel.setBeforeLassoRectX(event.getX());
                         iModel.setGetBeforeLassoRectY(event.getY());
+                        handleLassoPressed(event);
 
                         currentState = State.DRAGGING_TOOL;
                     }
@@ -108,6 +110,7 @@ public class BlobController {
             case DRAGGING_TOOL -> {
                 // the user will use either the lasso tool or the rectangle tool to select/unselect blobs
                 iModel.setCursorRedraw(event.getX(), event.getY());
+                handleLassoDragged(event);
             }
         }
     }
@@ -120,9 +123,39 @@ public class BlobController {
                 model.addBlob(event.getX(),event.getY());
                 currentState = State.READY;
             }
-            case DRAGGING_BLOB, DRAGGING_TOOL -> {
+            case DRAGGING_BLOB -> {
                 currentState = State.READY;
             }
+            case  DRAGGING_TOOL -> {
+                currentState = State.READY;
+                handleLassoReleased(event);
+            }
         }
+    }
+
+    /**
+     * Create new points and store them to the iModel's list of points.
+     * @param e mouse event
+     */
+    public void handleLassoPressed(MouseEvent e) {
+        iModel.clearPoints();
+        iModel.setPathComplete(false);
+        iModel.addPoints(new Point2D(e.getX(), e.getY()));
+    }
+
+    /**
+     * Continuously add more points to the lasso at drag event
+     * @param e mouse event
+     */
+    public void handleLassoDragged(MouseEvent e) {
+        iModel.addPoints(new Point2D(e.getX(), e.getY()));
+    }
+
+    /**
+     * End the lasso tool
+     * @param e mouse event
+     */
+    public void handleLassoReleased(MouseEvent e) {
+        iModel.setPathComplete(true);
     }
 }

@@ -71,10 +71,32 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
     }
 
     private void drawSelection() {
-        gcSelection.setStroke(Color.GREEN);  // for rectangle
+        // rectangle selection
+        gcSelection.setStroke(Color.GREEN);
         gcSelection.strokeRect(iModel.getBeforeLassoRectX(), iModel.getGetBeforeLassoRectY(),
                 iModel.getCursorX() - iModel.getBeforeLassoRectX(),
                 iModel.getCursorY() - iModel.getGetBeforeLassoRectY());
+
+        // lasso selection
+        gcSelection.setStroke(Color.RED);
+        if (!iModel.isPathComplete()) {
+            gcSelection.setFill(Color.RED);
+            iModel.getPoints().forEach(p -> gcSelection.fillOval(p.getX()-3,p.getY()-3,6,6));
+        } else {
+            gcSelection.setStroke(Color.ORANGE);
+            gcSelection.beginPath();
+
+            if (iModel.getPoints().size() != 0) {
+                // moving to the specified coordinates
+                gcSelection.moveTo(iModel.getPoints().get(0).getX(),iModel.getPoints().get(0).getY());
+
+                // Creates a line path element by drawing a straight line from the current coordinate to the new coordinates
+                iModel.getPoints().forEach(p -> gcSelection.lineTo(p.getX(),p.getY()));
+            }
+
+            gcSelection.closePath();
+            gcSelection.fill();
+        }
     }
 
     public void setModel(BlobModel newModel) {
