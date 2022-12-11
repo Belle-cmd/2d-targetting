@@ -26,7 +26,10 @@ public class InteractionModel {
 
 
 
-    /** Stores the mouse cursor (x, y) */
+    /** Stores the mouse cursor (x, y) at drag during a tool selection event */
+    private double dragMouseCursorX, dragMouseCursorY;
+
+    /** Stores the mouse cursor (x, y) per mouse movement in the canvas */
     private double mouseCursorX, mouseCursorY;
 
     /** lasso instance */
@@ -79,6 +82,22 @@ public class InteractionModel {
         return selectedBlobs;
     }
 
+    public double getDragMouseCursorX() {
+        return dragMouseCursorX;
+    }
+
+    public void setDragMouseCursorX(double dragMouseCursorX) {
+        this.dragMouseCursorX = dragMouseCursorX;
+    }
+
+    public double getDragMouseCursorY() {
+        return dragMouseCursorY;
+    }
+
+    public void setDragMouseCursorY(double dragMouseCursorY) {
+        this.dragMouseCursorY = dragMouseCursorY;
+    }
+
     public double getMouseCursorX() {
         return mouseCursorX;
     }
@@ -95,11 +114,7 @@ public class InteractionModel {
         this.mouseCursorY = mouseCursorY;
     }
 
-
-
-
-
-    // methods for single blob selection
+// methods for single blob selection
 
     public Blob getSelected() {
         return selected;

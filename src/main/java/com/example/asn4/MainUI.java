@@ -8,8 +8,7 @@ public class MainUI extends StackPane {
         // create mvc components
         BlobModel model = new BlobModel();
         BlobController controller = new BlobController();
-        BlobView view = new BlobView(1080);  // where canvas is created
-        view.setMaxSize(Double.MAX_VALUE, 1080);
+        BlobView view = new BlobView();  // where canvas is created
         InteractionModel iModel = new InteractionModel();  // keeps track of the selected blob
 
 

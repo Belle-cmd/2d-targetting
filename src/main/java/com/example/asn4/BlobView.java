@@ -41,9 +41,9 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
 
 
 
-    public BlobView(double vWidth) {
+    public BlobView() {
         // prepare canvas
-        myCanvas = new Canvas(vWidth,1080);
+        myCanvas = new Canvas(800,800);
         gcBlobs = myCanvas.getGraphicsContext2D();
         gcSelection = myCanvas.getGraphicsContext2D();  // gc for lasso tool and rectangle tool
 
@@ -52,41 +52,28 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
         font = new Font(15);
         gcBlobs.setFont(font);
 
-        this.widthProperty().addListener(this::setCanvasSize);
+//        this.widthProperty().addListener(this::setCanvasSize);
         this.setStyle("-fx-background-color: #b5e8e3;");  // set color of the background
         this.getChildren().add(myCanvas);
     }
 
-    /**
-     * Adjust canvas size based on resizing done by the user
-     */
-    private void setCanvasSize(Observable observable, Number oldVal, Number newVal) {
-        viewWidth = newVal.doubleValue();
-        myCanvas.setWidth(viewWidth);
-        iModel.setViewWidth(viewWidth);
-        drawBlobs();
-    }
 
     private void setupOffscreen() {
         // offscreen bitmap for checking 'contains'
-        checkCanvas = new Canvas(viewWidth, 1080);  // for the offscreen bitmap
+        checkCanvas = new Canvas(800, 800);  // for the offscreen bitmap
         checkGC = checkCanvas.getGraphicsContext2D();
         checkGC.beginPath();
 
         checkGC.moveTo(0,0);
-        checkGC.lineTo(viewWidth, 0);
-        checkGC.lineTo(viewWidth, 1080);
-        checkGC.lineTo(0,1080);
+        checkGC.lineTo(800, 0);
+        checkGC.lineTo(800, 800);
+        checkGC.lineTo(0,800);
 
         checkGC.closePath();
-        checkGC.setFill(Color.RED);
+        checkGC.setFill(Color.ORANGE);
         checkGC.fill();
 
-        // custom graphical image that is constructed from pixels
-        WritableImage buffer = checkCanvas.snapshot(null, null);
 
-        // interface defines methods for retrieving the pixel data from an Image or other surface containing pixels
-        reader = buffer.getPixelReader();
     }
 
     private void drawBlobs() {
@@ -107,30 +94,28 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
         });
     }
 
-//    private void checkSelection() {
-//        int mx = (int) iModel.getMouseCursorX();
-//        int my = (int) iModel.getMouseCursorY();
-//        System.out.println("");
-//        if (reader.getColor(mx, my).equals(Color.RED)) {
-//            // mouse is on polygon
-//            System.out.println("MOUSE IS INSIDE A BLOB");
-//        }
-//    }
+    private void checkSelection() {
+        if (reader!=null) {
+            if (reader.getColor((int) iModel.getMouseCursorX(), (int) iModel.getMouseCursorY()).equals(Color.ORANGE)) {
+                System.out.println("MOUSE ON SELECTION");
+            }
+        }
+    }
 
     private void drawSelection() {
+        // draw polygon, with colour depending on the mouse location
         // rectangle selection
         gcSelection.setStroke(Color.GREEN);
         gcSelection.strokeRect(iModel.getRectStartingX(), iModel.getRectStartingY(),
-                iModel.getMouseCursorX() - iModel.getRectStartingX(),
-                iModel.getMouseCursorY() - iModel.getRectStartingY());
+                iModel.getDragMouseCursorX() - iModel.getRectStartingX(),
+                iModel.getDragMouseCursorY() - iModel.getRectStartingY());
 
-        // lasso selection
-        gcSelection.setStroke(Color.RED);
+        // draw path during lasso selection (fill the path when finished)
         if (!iModel.getLassoPathStatus()) {
             gcSelection.setFill(Color.RED);
             iModel.getPoints().forEach(p -> gcSelection.fillOval(p.getX()-3,p.getY()-3,6,6));
         } else {
-            gcSelection.setStroke(Color.ORANGE);
+            gcSelection.setFill(Color.ORANGE);
             gcSelection.beginPath();
 
             if (iModel.getPoints().size() != 0) {
@@ -142,9 +127,13 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
             }
 
             gcSelection.closePath();
-            gcSelection.setFill(Color.RED);
             gcSelection.fill();
         }
+        // custom graphical image that is constructed from pixels
+        WritableImage buffer = myCanvas.snapshot(null, null);
+
+        // interface defines methods for retrieving the pixel data from an Image or other surface containing pixels
+        reader = buffer.getPixelReader();
     }
 
     public void setModel(BlobModel newModel) {
@@ -182,8 +171,12 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
         myCanvas.setOnMousePressed(controller::handlePressed);
         myCanvas.setOnMouseDragged(e -> {
             controller.handleDragged(e);
-            controller.storeCursor(e);
+            controller.storeDraggingCursor(e);
         });
         myCanvas.setOnMouseReleased(controller::handleReleased);
+        myCanvas.setOnMouseMoved(e -> {
+            controller.storeMovingCursor(e);
+            checkSelection();
+        });
     }
 }

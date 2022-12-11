@@ -161,7 +161,21 @@ public class BlobController {
         iModel.setLassoPathStatus(true);
     }
 
-    public void storeCursor(MouseEvent e) {
+    /**
+     * Stores the mouse position during a dragging event, during the tool selection drag event
+     * @param e mouse event
+     */
+    public void storeDraggingCursor(MouseEvent e) {
+        iModel.setDragMouseCursorX(e.getX());
+        iModel.setDragMouseCursorY(e.getY());
+    }
+
+    /**
+     * Storse the mouse position during a mouse movement event on the canvas, for checking if the mouse is hovering
+     * on a bitmap coordinate
+     * @param e mouse event
+     */
+    public void storeMovingCursor(MouseEvent e) {
         iModel.setMouseCursorX(e.getX());
         iModel.setMouseCursorY(e.getY());
     }
