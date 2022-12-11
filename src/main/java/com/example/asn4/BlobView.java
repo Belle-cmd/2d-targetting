@@ -3,6 +3,8 @@ package com.example.asn4;
 import javafx.beans.Observable;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.PixelReader;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -16,7 +18,13 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
     /** pen abstraction for the selection tools (lasso, rectangle) */
     private GraphicsContext gcSelection;
 
+    /** pen abstraction for the offscreen bitmap */
+    private GraphicsContext checkGC;
+
     private Canvas myCanvas;
+
+    /** Canvas for the offscreen bitmap */
+    private Canvas checkCanvas;
 
     private BlobModel model;
 
@@ -28,11 +36,18 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
     /** Stores the width of the canvas */
     private double viewWidth;
 
+    /** Used to retrieve the pixel data from an Image or other surface containing pixels */
+    private PixelReader reader;
+
+
+
     public BlobView(double vWidth) {
         // prepare canvas
         myCanvas = new Canvas(vWidth,1080);
         gcBlobs = myCanvas.getGraphicsContext2D();
         gcSelection = myCanvas.getGraphicsContext2D();  // gc for lasso tool and rectangle tool
+
+        setupOffscreen();  // create bitmap canvas
 
         font = new Font(15);
         gcBlobs.setFont(font);
@@ -50,6 +65,28 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
         myCanvas.setWidth(viewWidth);
         iModel.setViewWidth(viewWidth);
         drawBlobs();
+    }
+
+    private void setupOffscreen() {
+        // offscreen bitmap for checking 'contains'
+        checkCanvas = new Canvas(viewWidth, 1080);  // for the offscreen bitmap
+        checkGC = checkCanvas.getGraphicsContext2D();
+        checkGC.beginPath();
+
+        checkGC.moveTo(0,0);
+        checkGC.lineTo(viewWidth, 0);
+        checkGC.lineTo(viewWidth, 1080);
+        checkGC.lineTo(0,1080);
+
+        checkGC.closePath();
+        checkGC.setFill(Color.RED);
+        checkGC.fill();
+
+        // custom graphical image that is constructed from pixels
+        WritableImage buffer = checkCanvas.snapshot(null, null);
+
+        // interface defines methods for retrieving the pixel data from an Image or other surface containing pixels
+        reader = buffer.getPixelReader();
     }
 
     private void drawBlobs() {
@@ -70,16 +107,26 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
         });
     }
 
+//    private void checkSelection() {
+//        int mx = (int) iModel.getMouseCursorX();
+//        int my = (int) iModel.getMouseCursorY();
+//        System.out.println("");
+//        if (reader.getColor(mx, my).equals(Color.RED)) {
+//            // mouse is on polygon
+//            System.out.println("MOUSE IS INSIDE A BLOB");
+//        }
+//    }
+
     private void drawSelection() {
         // rectangle selection
         gcSelection.setStroke(Color.GREEN);
-        gcSelection.strokeRect(iModel.getBeforeLassoRectX(), iModel.getGetBeforeLassoRectY(),
-                iModel.getCursorX() - iModel.getBeforeLassoRectX(),
-                iModel.getCursorY() - iModel.getGetBeforeLassoRectY());
+        gcSelection.strokeRect(iModel.getRectStartingX(), iModel.getRectStartingY(),
+                iModel.getMouseCursorX() - iModel.getRectStartingX(),
+                iModel.getMouseCursorY() - iModel.getRectStartingY());
 
         // lasso selection
         gcSelection.setStroke(Color.RED);
-        if (!iModel.isPathComplete()) {
+        if (!iModel.getLassoPathStatus()) {
             gcSelection.setFill(Color.RED);
             iModel.getPoints().forEach(p -> gcSelection.fillOval(p.getX()-3,p.getY()-3,6,6));
         } else {
@@ -95,6 +142,7 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
             }
 
             gcSelection.closePath();
+            gcSelection.setFill(Color.RED);
             gcSelection.fill();
         }
     }
@@ -132,7 +180,10 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
             }
         });
         myCanvas.setOnMousePressed(controller::handlePressed);
-        myCanvas.setOnMouseDragged(controller::handleDragged);
+        myCanvas.setOnMouseDragged(e -> {
+            controller.handleDragged(e);
+            controller.storeCursor(e);
+        });
         myCanvas.setOnMouseReleased(controller::handleReleased);
     }
 }

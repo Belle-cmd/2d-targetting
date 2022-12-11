@@ -23,7 +23,6 @@ public class BlobController {
 
 
 
-
     public BlobController() {
 
     }
@@ -67,8 +66,9 @@ public class BlobController {
                     if (event.isControlDown()) {
                         // when mouse press occurs in canvas, saves the current mouse position
                         // for drawing the rectangle selection tool
-                        iModel.setBeforeLassoRectX(event.getX());
-                        iModel.setGetBeforeLassoRectY(event.getY());
+//                        iModel.setBeforeLassoRectX(event.getX());
+//                        iModel.setGetBeforeLassoRectY(event.getY());
+                        iModel.setRectStartingPoint(event.getX(), event.getY());
                         handleLassoPressed(event);
 
                         currentState = State.DRAGGING_TOOL;
@@ -109,7 +109,9 @@ public class BlobController {
             }
             case DRAGGING_TOOL -> {
                 // the user will use either the lasso tool or the rectangle tool to select/unselect blobs
-                iModel.setCursorRedraw(event.getX(), event.getY());
+//                iModel.setCursorRedraw(event.getX(), event.getY());
+                iModel.setRectEndingPoint(event.getX(), event.getY());
+                iModel.setLassoPoint(event.getX(), event.getY());
                 handleLassoDragged(event);
             }
         }
@@ -137,9 +139,9 @@ public class BlobController {
      * Create new points and store them to the iModel's list of points.
      * @param e mouse event
      */
-    public void handleLassoPressed(MouseEvent e) {
+    private void handleLassoPressed(MouseEvent e) {
         iModel.clearPoints();
-        iModel.setPathComplete(false);
+        iModel.setLassoPathStatus(false);
         iModel.addPoints(new Point2D(e.getX(), e.getY()));
     }
 
@@ -147,7 +149,7 @@ public class BlobController {
      * Continuously add more points to the lasso at drag event
      * @param e mouse event
      */
-    public void handleLassoDragged(MouseEvent e) {
+    private void handleLassoDragged(MouseEvent e) {
         iModel.addPoints(new Point2D(e.getX(), e.getY()));
     }
 
@@ -155,7 +157,12 @@ public class BlobController {
      * End the lasso tool
      * @param e mouse event
      */
-    public void handleLassoReleased(MouseEvent e) {
-        iModel.setPathComplete(true);
+    private void handleLassoReleased(MouseEvent e) {
+        iModel.setLassoPathStatus(true);
+    }
+
+    public void storeCursor(MouseEvent e) {
+        iModel.setMouseCursorX(e.getX());
+        iModel.setMouseCursorY(e.getY());
     }
 }

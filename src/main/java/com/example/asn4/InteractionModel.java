@@ -24,21 +24,15 @@ public class InteractionModel {
     /** stores a singly selected blob */
     private Blob selected;
 
-    /** Stores the dimensions of the rectangle selection */
-    private  double boxLft, boxTop, boxWidth, boxHeight;
 
-    /** Stores the mouse position at the end of a mouse press event, just before a mouse drag event occurs
-     * for blob selection through lasso tool or rectangle selection tool */
-    private double beforeLassoRectX, getBeforeLassoRectY;
 
-    /** Stores the mouse cursor (x, y) values */
-    private double cursorX, cursorY;
+    /** Stores the mouse cursor (x, y) */
+    private double mouseCursorX, mouseCursorY;
 
-    /** Store points of the lasso tool */
-    private List<Point2D> points;
+    /** lasso instance */
+    private LassoSelection lassoSelection;
 
-    /** Indicates when drawing circles is currently occurring or not */
-    private boolean pathComplete;
+    private RectangleSelection rectSelection;
 
 
 
@@ -49,7 +43,9 @@ public class InteractionModel {
         blobSubscribers = new ArrayList<>();
         selectionSubscribers = new ArrayList<>();
         selectedBlobs = new ArrayList<>();
-        points = new ArrayList<>();
+
+        lassoSelection = new LassoSelection();
+        rectSelection = new RectangleSelection();
     }
 
 
@@ -83,48 +79,23 @@ public class InteractionModel {
         return selectedBlobs;
     }
 
-    public double getBeforeLassoRectX() {
-        return beforeLassoRectX;
+    public double getMouseCursorX() {
+        return mouseCursorX;
     }
 
-    public void setBeforeLassoRectX(double beforeLassoRectX) {
-        this.beforeLassoRectX = beforeLassoRectX;
+    public void setMouseCursorX(double mouseCursorX) {
+        this.mouseCursorX = mouseCursorX;
     }
 
-    public double getGetBeforeLassoRectY() {
-        return getBeforeLassoRectY;
+    public double getMouseCursorY() {
+        return mouseCursorY;
     }
 
-    public void setGetBeforeLassoRectY(double getBeforeLassoRectY) {
-        this.getBeforeLassoRectY = getBeforeLassoRectY;
+    public void setMouseCursorY(double mouseCursorY) {
+        this.mouseCursorY = mouseCursorY;
     }
 
-    public double getCursorX() {
-        return cursorX;
-    }
 
-    public double getCursorY() {
-        return cursorY;
-    }
-
-    public void setCursorRedraw(double x, double y) {
-        cursorX = x;
-        cursorY = y;
-        notifySelectionSubscribers();
-    }
-
-    public boolean isPathComplete() {
-        return pathComplete;
-    }
-
-    public void setPathComplete(boolean pathComplete) {
-        this.pathComplete = pathComplete;
-        notifySelectionSubscribers();
-    }
-
-    public List<Point2D> getPoints() {
-        return points;
-    }
 
 
 
@@ -199,18 +170,73 @@ public class InteractionModel {
     }
 
 
+
+    // METHODS FOR SELECTION
+
+    public double getRectStartingX() {
+        return rectSelection.getStartingX();
+    }
+
+    public double getRectStartingY() {
+        return rectSelection.getStartingY();
+    }
+
+    public double getRectEndingX() {
+        return rectSelection.getEndingX();
+    }
+
+    public double getRectEndingY() {
+        return rectSelection.getEndingY();
+    }
+
+    public void setRectStartingPoint(double newX, double newY) {
+        rectSelection.setStartingCursor(newX, newY);
+        notifySelectionSubscribers();
+    }
+
+    public void setRectEndingPoint(double newX, double newY) {
+        rectSelection.setEndingCursor(newX, newY);
+        notifySelectionSubscribers();
+    }
+
+    public double getLassoXCoordinate() {
+        return lassoSelection.getCursorX();
+    }
+
+    public double getLassoYCoordinate() {
+        return lassoSelection.getCursorY();
+    }
+
+    public boolean getLassoPathStatus() {
+        return lassoSelection.isPathComplete();
+    }
+
+    public void setLassoPathStatus(boolean newStatus) {
+        lassoSelection.setPathComplete(newStatus);
+        notifySelectionSubscribers();
+    }
+
+    public void setLassoPoint(double newX, double newY) {
+        lassoSelection.setCursor(newX, newY);
+        notifySelectionSubscribers();
+    }
+
     /**
      * Add a new point to the list of points that make up the lasso tool
      * @param point2D point
      */
     public void addPoints(Point2D point2D) {
-        points.add(point2D);
+        lassoSelection.addPoint(point2D);
         notifySelectionSubscribers();
     }
 
     public void clearPoints() {
-        points.clear();
+        lassoSelection.clearPoints();
         notifySelectionSubscribers();
+    }
+
+    public List<Point2D> getPoints() {
+       return lassoSelection.getPoints();
     }
 }
 
