@@ -1,6 +1,5 @@
 package com.example.asn4;
 
-import javafx.beans.Observable;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.PixelReader;
@@ -10,31 +9,36 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
+/**
+ * This class uses 2 canvases, one shown to the user (myCanvas) and a hidden canvas (selectionCanvas).
+ * myCanvas is where the blobs, rectangle selection and tool selection visual feedback are shown to the user.
+ * selectionCanvas is a hidden canvas where the area selection created by the lasso and rectangle tool is created.
+ */
 public class BlobView extends StackPane implements BlobModelListener, IModelListener {
 
     /** pen abstraction for drawing blobs */
     private GraphicsContext gcBlobs;
 
-    /** pen abstraction for the selection tools (lasso, rectangle) */
-    private GraphicsContext gcSelection;
+    /** pen abstraction for the selection tools (lasso, rectangle) shown to the user */
+    private GraphicsContext gc;
 
-    /** pen abstraction for the offscreen bitmap */
-    private GraphicsContext checkGC;
+    /** pen abstraction for the offscreen canvas for the selection area, hidden from the user */
+    private GraphicsContext selectGC;
 
+    /** Canvas where blobs and selection tool side effects are shown to the user */
     private Canvas myCanvas;
 
-    /** Canvas for the offscreen bitmap */
-    private Canvas checkCanvas;
+    /** Canvas for the rectangle and lasso selection hidden to the user */
+    private Canvas selectionCanvas;
 
+    /** Model holding the main data of the application, including the blobs created */
     private BlobModel model;
 
+    /** Interaction model that holds data for user selections */
     private InteractionModel iModel;
 
     /** Stores the font style used to display a blob's order number */
     private Font font;
-
-    /** Stores the width of the canvas */
-    private double viewWidth;
 
     /** Used to retrieve the pixel data from an Image or other surface containing pixels */
     private PixelReader reader;
@@ -45,36 +49,18 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
         // prepare canvas
         myCanvas = new Canvas(800,800);
         gcBlobs = myCanvas.getGraphicsContext2D();
-        gcSelection = myCanvas.getGraphicsContext2D();  // gc for lasso tool and rectangle tool
+        gc = myCanvas.getGraphicsContext2D();  // gc for lasso tool and rectangle tool shown to the user
 
-        setupOffscreen();  // create bitmap canvas
+        selectionCanvas = new Canvas(800, 800);  // canvas for selected area (hidden)
+        selectGC = selectionCanvas.getGraphicsContext2D();  // used to draw the area filled by the selection (hidden)
 
         font = new Font(15);
         gcBlobs.setFont(font);
 
-//        this.widthProperty().addListener(this::setCanvasSize);
         this.setStyle("-fx-background-color: #b5e8e3;");  // set color of the background
         this.getChildren().add(myCanvas);
     }
 
-
-    private void setupOffscreen() {
-        // offscreen bitmap for checking 'contains'
-        checkCanvas = new Canvas(800, 800);  // for the offscreen bitmap
-        checkGC = checkCanvas.getGraphicsContext2D();
-        checkGC.beginPath();
-
-        checkGC.moveTo(0,0);
-        checkGC.lineTo(800, 0);
-        checkGC.lineTo(800, 800);
-        checkGC.lineTo(0,800);
-
-        checkGC.closePath();
-        checkGC.setFill(Color.ORANGE);
-        checkGC.fill();
-
-
-    }
 
     private void drawBlobs() {
         // Clears a portion of the canvas with a transparent color value
@@ -94,6 +80,7 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
         });
     }
 
+
     private void checkSelection() {
         if (reader!=null) {
             if (reader.getColor((int) iModel.getMouseCursorX(), (int) iModel.getMouseCursorY()).equals(Color.ORANGE)) {
@@ -102,57 +89,71 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
         }
     }
 
+
     private void drawSelection() {
-        // draw polygon, with colour depending on the mouse location
         // rectangle selection
-        gcSelection.setStroke(Color.GREEN);
-        gcSelection.strokeRect(iModel.getRectStartingX(), iModel.getRectStartingY(),
+        gc.setStroke(Color.GREEN);
+        gc.strokeRect(iModel.getRectStartingX(), iModel.getRectStartingY(),
                 iModel.getDragMouseCursorX() - iModel.getRectStartingX(),
                 iModel.getDragMouseCursorY() - iModel.getRectStartingY());
 
-        // draw path during lasso selection (fill the path when finished)
+
         if (!iModel.getLassoPathStatus()) {
-            gcSelection.setFill(Color.RED);
-            iModel.getPoints().forEach(p -> gcSelection.fillOval(p.getX()-3,p.getY()-3,6,6));
+            // draw path during lasso selection
+
+            gc.setFill(Color.RED);
+            // for showing the user the dots of the lasso tool
+            iModel.getPoints().forEach(p -> gc.fillOval(p.getX()-3,p.getY()-3,6,6));
+
+            // for the hidden canvas where bitmaps get compared to distinguish selection (hidden from user)
+            iModel.getPoints().forEach(p -> selectGC.fillOval(p.getX()-3,p.getY()-3,6,6));
+
         } else {
-            gcSelection.setFill(Color.ORANGE);
-            gcSelection.beginPath();
+            // when path creation is completed, fill the area to indicate the lasso selection
+
+            selectGC.setFill(Color.ORANGE);
+            selectGC.beginPath();
 
             if (iModel.getPoints().size() != 0) {
                 // moving to the specified coordinates
-                gcSelection.moveTo(iModel.getPoints().get(0).getX(),iModel.getPoints().get(0).getY());
+                selectGC.moveTo(iModel.getPoints().get(0).getX(),iModel.getPoints().get(0).getY());
 
                 // Creates a line path element by drawing a straight line from the current coordinate to the new coordinates
-                iModel.getPoints().forEach(p -> gcSelection.lineTo(p.getX(),p.getY()));
+                iModel.getPoints().forEach(p -> selectGC.lineTo(p.getX(),p.getY()));
             }
 
-            gcSelection.closePath();
-            gcSelection.fill();
+            selectGC.closePath();
+            selectGC.fill();
         }
         // custom graphical image that is constructed from pixels
-        WritableImage buffer = myCanvas.snapshot(null, null);
+        WritableImage buffer = selectionCanvas.snapshot(null, null);
 
         // interface defines methods for retrieving the pixel data from an Image or other surface containing pixels
         reader = buffer.getPixelReader();
     }
 
+
     public void setModel(BlobModel newModel) {
         model = newModel;
     }
 
+
     public void setIModel(InteractionModel newIModel) {
         iModel = newIModel;
     }
+
 
     @Override
     public void modelChanged() {
         drawBlobs();
     }
 
+
     @Override
     public void iModelChanged() {
         drawBlobs();
     }
+
 
     @Override
     public void iModelChangedSelection() {
