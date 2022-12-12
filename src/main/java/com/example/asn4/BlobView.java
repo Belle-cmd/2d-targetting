@@ -13,6 +13,9 @@ import javafx.scene.text.Font;
  * This class uses 2 canvases, one shown to the user (myCanvas) and a hidden canvas (selectionCanvas).
  * myCanvas is where the blobs, rectangle selection and tool selection visual feedback are shown to the user.
  * selectionCanvas is a hidden canvas where the area selection created by the lasso and rectangle tool is created.
+ *
+ * This class also uses a snapshot of the selectionCanvas and sends that snapshot to the interaction model so that, the
+ * interaction model's lasso tool can use that snapshot to check if a blob is within the lasso tool's area selection.
  */
 public class BlobView extends StackPane implements BlobModelListener, IModelListener {
 
@@ -67,8 +70,7 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
         gcBlobs.clearRect(0,0,myCanvas.getWidth(),myCanvas.getHeight());
 
         model.getBlobs().forEach(b -> {
-            // for single blob selection
-            if (b == iModel.getSelected()) {
+            if (iModel.isSelected(b)) {
                 gcBlobs.setFill(Color.ORCHID);
             } else {
                 gcBlobs.setFill(Color.STEELBLUE);
@@ -81,15 +83,14 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
     }
 
 
-    private void checkSelection() {
-        if (reader!=null) {
-            if (reader.getColor((int) iModel.getMouseCursorX(), (int) iModel.getMouseCursorY()).equals(Color.ORANGE)) {
-                System.out.println("MOUSE ON SELECTION");
-            }
-        }
-    }
-
-
+    /**
+     * Draws a rectangle and lasso selection tools to the canvas myCanvas where users can see them. The selection area
+     * of the rectangle and lasso tool are hidden to the user and drawn in selectionCanvas.
+     *
+     * Every time this function is
+     * called, the snapshot image of selectionCanvas is sent to the interaction model so that a copy of the snapshot
+     * can be used by the object instance of the rectangle/lasso tool stored in the interaction model.
+     */
     private void drawSelection() {
         // rectangle selection
         gc.setStroke(Color.GREEN);
@@ -130,6 +131,8 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
 
         // interface defines methods for retrieving the pixel data from an Image or other surface containing pixels
         reader = buffer.getPixelReader();
+        iModel.storeCanvasSnapshot(reader);  // stores/updates the photo of the canvas where area selection is stored
+        selectGC.clearRect(0,0,myCanvas.getWidth(),myCanvas.getHeight());
     }
 
 
@@ -175,9 +178,6 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
             controller.storeDraggingCursor(e);
         });
         myCanvas.setOnMouseReleased(controller::handleReleased);
-        myCanvas.setOnMouseMoved(e -> {
-            controller.storeMovingCursor(e);
-            checkSelection();
-        });
+        myCanvas.setOnMouseMoved(controller::storeMovingCursor);
     }
 }

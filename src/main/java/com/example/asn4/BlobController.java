@@ -3,6 +3,8 @@ package com.example.asn4;
 import javafx.geometry.Point2D;
 import javafx.scene.input.MouseEvent;
 
+import java.util.List;
+
 public class BlobController {
 
     private BlobModel model;
@@ -13,13 +15,14 @@ public class BlobController {
 
     private  double dX,dY;
 
-    private enum State {READY,PREPARE_CREATE, DRAGGING_BLOB, DRAGGING_TOOL}  // from interaction state model
+    private enum State {READY,PREPARE_CREATE, DRAGGING_BLOB, DRAGGING_SELECTION}  // from interaction state model
     State currentState = State.READY;
 
     /** Stores the mouse position at the end of a mouse press event, just before a mouse drag event starts */
     private double beforeShiftX, beforeShiftY;
 
-
+    /** list of all blobs within the lasso tool selection */
+    private List<Blob> hitList;
 
 
 
@@ -44,38 +47,38 @@ public class BlobController {
     }
 
     public void handlePressed(MouseEvent event) {
-        switch (currentState) {
-            case READY -> {
+        if (currentState == State.READY) {
+            if (model.hitBlob(event.getX(), event.getY())) {
                 // checks if user pressed a blob or not
-                if (model.hitBlob(event.getX(),event.getY())) {
-                    Blob b = model.whichHit(event.getX(),event.getY());
-                    iModel.setSelected(b);
 
-                    prevX = event.getX();
-                    prevY = event.getY();
+                Blob b = model.whichHit(event.getX(), event.getY());
+                iModel.setSelected(b);
 
-                    beforeShiftX = prevX;  // save the current mouse position before resizing blobs
-                    beforeShiftY = prevY;
+                prevX = event.getX();
+                prevY = event.getY();
 
-                    currentState = State.DRAGGING_BLOB;
-                } else {
-                    if (event.isShiftDown()) {
-                        // enable blob creation at shift key press (remove if-statement for multiple selections)
-                        currentState = State.PREPARE_CREATE;
-                    }
-                    if (event.isControlDown()) {
-                        // when mouse press occurs in canvas, saves the current mouse position
-                        // for drawing the rectangle selection tool
-//                        iModel.setBeforeLassoRectX(event.getX());
-//                        iModel.setGetBeforeLassoRectY(event.getY());
-                        iModel.setRectStartingPoint(event.getX(), event.getY());
-                        handleLassoPressed(event);
+                beforeShiftX = prevX;  // save the current mouse position before resizing blobs
+                beforeShiftY = prevY;
 
-                        currentState = State.DRAGGING_TOOL;
-                    }
-                    // when the user clicks on the background, blob selection disappears
-                    iModel.unselect();
+                currentState = State.DRAGGING_BLOB;
+            } else {
+                // user triggers a press event somewhere in the canvas
+                if (event.isShiftDown()) {
+                    // enable blob creation at shift key press (remove if-statement for multiple selections)
+                    currentState = State.PREPARE_CREATE;
                 }
+
+                if (event.isControlDown()) {
+                    // when mouse press occurs in canvas, saves the current mouse position
+                    // for drawing the rectangle selection tool
+                    iModel.setRectStartingPoint(event.getX(), event.getY());
+                    handleLassoPressed(event);
+
+                    currentState = State.DRAGGING_SELECTION;
+                }
+                // when the user clicks on the background, blob selection disappears
+                iModel.unselect();
+                iModel.clearBlobSelection();
             }
         }
     }
@@ -104,12 +107,11 @@ public class BlobController {
                     }
                 }
 
-                model.moveBlob(iModel.getSelected(), dX,dY);
-//                model.moveBlobs(iModel.getSelectedBlobs(), dX,dY);
+//                model.moveBlob(iModel.getSelected(), dX,dY);
+                model.moveBlobs(iModel.getSelectedBlobs(), dX,dY);
             }
-            case DRAGGING_TOOL -> {
+            case DRAGGING_SELECTION -> {
                 // the user will use either the lasso tool or the rectangle tool to select/unselect blobs
-//                iModel.setCursorRedraw(event.getX(), event.getY());
                 iModel.setRectEndingPoint(event.getX(), event.getY());
                 iModel.setLassoPoint(event.getX(), event.getY());
                 handleLassoDragged(event);
@@ -128,9 +130,15 @@ public class BlobController {
             case DRAGGING_BLOB -> {
                 currentState = State.READY;
             }
-            case  DRAGGING_TOOL -> {
+            case DRAGGING_SELECTION -> {
                 currentState = State.READY;
                 handleLassoReleased(event);
+
+                // code below has to be before handleLassoReleased() bc when view is updated as a result of
+                // handleLassoReleased(), BlobView sends canvas snapshot needed for the code below
+                hitList = iModel.areaHit(model.getBlobs());  // get all the selected blobs using lasso tool
+                System.out.println(hitList);
+                iModel.selectMultiple(hitList);
             }
         }
     }

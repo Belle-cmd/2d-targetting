@@ -1,6 +1,7 @@
 package com.example.asn4;
 
 import javafx.geometry.Point2D;
+import javafx.scene.image.PixelReader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,8 +36,12 @@ public class InteractionModel {
     /** lasso instance */
     private LassoSelection lassoSelection;
 
+    /** rectangle tool instance */
     private RectangleSelection rectSelection;
 
+    /** Everytime the lasso/rectangle tool is used to create a selection area, the canvas holding that gets a snapshot
+     * image. That snapshot image from the BlobView is stored here, so that it can be used by the lasso/rect tool */
+    private PixelReader canvasSnapshot;
 
 
     /**
@@ -49,6 +54,7 @@ public class InteractionModel {
 
         lassoSelection = new LassoSelection();
         rectSelection = new RectangleSelection();
+        canvasSnapshot = null;
     }
 
 
@@ -70,13 +76,7 @@ public class InteractionModel {
 
     // getter and setter methods
 
-    public void setViewWidth(double w) {
-        viewWidth = w;
-    }
 
-    public double getCursorRadius() {
-        return areaRadius;
-    }
 
     public ArrayList<Blob> getSelectedBlobs() {
         return selectedBlobs;
@@ -114,7 +114,7 @@ public class InteractionModel {
         this.mouseCursorY = mouseCursorY;
     }
 
-// methods for single blob selection
+    // METHODS FOR SINGLE BLOB SELECTION
 
     public Blob getSelected() {
         return selected;
@@ -134,7 +134,7 @@ public class InteractionModel {
 
 
 
-    // methods for multiple blob selection
+    // METHODS FOR MULTIPLE BLOB SELECTION
 
     /**
      * Checks if a given blob is part of iModel's selected blobs list
@@ -150,16 +150,9 @@ public class InteractionModel {
      * selected blobs can be stored
      * @param hitList selected blobs created in the controller
      */
-    public void select(ArrayList<Blob> hitList) {
+    public void selectMultiple(List<Blob> hitList) {
         hitList.forEach(this::updateSelected);
         notifyBlobSubscribers();
-    }
-
-    /**
-     * Clears all the selected blobs stored in the iModel
-     */
-    public void clearBlobList() {
-        selectedBlobs.clear();
     }
 
     /**
@@ -176,17 +169,27 @@ public class InteractionModel {
     }
 
     /**
+     * Clears all the selected blobs stored in the iModel
+     */
+    public void clearBlobSelection() {
+        selectedBlobs.removeAll(selectedBlobs);
+        System.out.println(selectedBlobs);
+        notifyBlobSubscribers();
+    }
+
+
+    /**
      * Checks
      * @param hitList list of selected blobs at the controller
      * @return true if all selected blobs at controller is contained in the iModel, false otherwise
      */
-    public boolean allSelectedBlobs(ArrayList<Blob> hitList) {
+    public boolean allSelectedBlobs(List<Blob> hitList) {
         return selectedBlobs.containsAll(hitList);
     }
 
 
 
-    // METHODS FOR SELECTION
+    // METHODS FOR TOOL SELECTION
 
     public double getRectStartingX() {
         return rectSelection.getStartingX();
@@ -253,5 +256,42 @@ public class InteractionModel {
     public List<Point2D> getPoints() {
        return lassoSelection.getPoints();
     }
+
+
+    /**
+     * Stores the canvas snapshot by pixels
+     * @param reader canvas snapshot from the BlobView, from the hidden canvas containing the selection area of the
+     * lasso/rectangle tool
+     */
+    public void storeCanvasSnapshot(PixelReader reader) {
+        this.canvasSnapshot = reader;
+    }
+
+    /**
+     * Uses the canvas snapshot (stored in canvasSnapshot var) of the hidden canvas where the lasso selection
+     * is drawn, to see if a blob is within the tools' selection area. The list of all blobs in the application is
+     * iterated through to see if a blob is within the area selection.
+     * @param blobs list of all created blobs in the application so far
+     * @return list of all blobs WITHIN the selection area of the lasso tool
+     */
+    public List<Blob> areaHit(List<Blob> blobs) {
+        List<Blob> hitList = new ArrayList<>();
+        blobs.forEach(b -> {
+            if (checkLassoContains(b, canvasSnapshot)) {
+                hitList.add(b);
+            }
+        });
+        return hitList;
+    }
+
+    /**
+     * Calls the lasso selection object to see if a given blob and coordinate is within the lasso tool's
+     * selection area
+     * @return true if a blob is within the area selection, false otherwise
+     */
+    public boolean checkLassoContains(Blob b, PixelReader reader) {
+        return lassoSelection.contains(b, reader);
+    }
+
 }
 

@@ -1,6 +1,9 @@
 package com.example.asn4;
 
 import javafx.geometry.Point2D;
+import javafx.scene.image.PixelReader;
+import javafx.scene.paint.Color;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,5 +63,19 @@ public class LassoSelection {
      */
     public void clearPoints() {
         points.clear();
+    }
+
+    /**
+     * Checks if a blob is within the lasso tool selection by using the pixel reader instance of the hidden canvas
+     * where the area selection of lasso tool is drawn
+     * @param blob blob instance
+     * @param reader canvas snapshot instance
+     * @return true if a blob is within the lasso selection, false if not
+     */
+    public boolean contains(Blob blob, PixelReader reader) {
+        if (reader!=null) {
+            return reader.getColor((int) blob.x, (int) blob.y).equals(Color.ORANGE);
+        }
+        return false;
     }
 }

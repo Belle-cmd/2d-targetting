@@ -2,7 +2,6 @@ package com.example.asn4;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class BlobModel {
     private List<BlobModelListener> subscribers;
@@ -74,9 +73,5 @@ public class BlobModel {
             if (b.contains(x,y)) return b;
         }
         return null;
-    }
-
-    public ArrayList<Blob> hitArea(double x, double y, double cursorRadius) {
-        return (ArrayList<Blob>) blobs.stream().filter(b -> b.contains(x, y, cursorRadius)).collect(Collectors.toList());
     }
 }
