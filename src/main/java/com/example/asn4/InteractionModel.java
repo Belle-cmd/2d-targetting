@@ -28,9 +28,9 @@ public class InteractionModel {
     /** rectangle tool instance */
     private RectangleSelection rectSelection;
 
-    /** Everytime the lasso/rectangle tool is used to create a selection area, the canvas holding that gets a snapshot
-     * image. That snapshot image from the BlobView is stored here, so that it can be used by the lasso/rect tool */
-    private PixelReader canvasSnapshot;
+    /** Everytime the lasso tool is used to create a selection area, the canvas holding its graphics content gets a
+     * snapshot image stored in this var. This is done so that blobs within the selection can be distinguished */
+    private PixelReader lassoCanvasSnapshot;
 
 
 
@@ -41,7 +41,7 @@ public class InteractionModel {
 
         lassoSelection = new LassoSelection();
         rectSelection = new RectangleSelection();
-        canvasSnapshot = null;
+        lassoCanvasSnapshot = null;
     }
 
 
@@ -242,12 +242,26 @@ public class InteractionModel {
 
 
     /**
-     * Stores the canvas snapshot by pixels
+     * Stores the canvas snapshot of the lasso tool by pixels
      * @param reader canvas snapshot from the BlobView, from the hidden canvas containing the selection area of the
      * lasso/rectangle tool
      */
-    public void storeCanvasSnapshot(PixelReader reader) {
-        this.canvasSnapshot = reader;
+    public void storeLassoCanvasSnapshot(PixelReader reader) {
+        this.lassoCanvasSnapshot = reader;
+    }
+
+    /**
+     * Store the dimensions of the rectangle selection after it is drawn in the view
+     * @param newLeft new left dimension
+     * @param newTop new top dimension
+     * @param newWidth new width dimension
+     * @param newHeight new height dimension
+     */
+    public void storeRectSelectionDimension(double newLeft, double newTop, double newWidth, double newHeight) {
+        rectSelection.setLeft(newLeft);
+        rectSelection.setTop(newTop);
+        rectSelection.setWidth(newWidth);
+        rectSelection.setHeight(newHeight);
     }
 
     /**
@@ -257,10 +271,27 @@ public class InteractionModel {
      * @param blobs list of all created blobs in the application so far
      * @return list of all blobs WITHIN the selection area of the lasso tool
      */
-    public List<Blob> areaHit(List<Blob> blobs) {
+    public List<Blob> lassoAreaHit(List<Blob> blobs) {
         List<Blob> hitList = new ArrayList<>();
         blobs.forEach(b -> {
-            if (checkLassoContains(b, canvasSnapshot)) {
+            if (checkLassoContains(b, lassoCanvasSnapshot)) {
+                hitList.add(b);
+            }
+        });
+        return hitList;
+    }
+
+    /**
+     * Uses the canvas snapshot of the hidden canvas where the rectangle selection is drawn, to see if a blob is within
+     * the tools' selection area. The list of all blobs in the application is iterated through to see if a blob is
+     * within the area selection.
+     * @param blobs list of all created blobs in the application so far
+     * @return list of all blobs WITHIN the selection area of the rectangle tool
+     */
+    public List<Blob> rectAreaHit(List<Blob> blobs) {
+        List<Blob> hitList = new ArrayList<>();
+        blobs.forEach(b -> {
+            if (rectSelection.contains(b)) {
                 hitList.add(b);
             }
         });
@@ -272,7 +303,7 @@ public class InteractionModel {
      * selection area
      * @return true if a blob is within the area selection, false otherwise
      */
-    public boolean checkLassoContains(Blob b, PixelReader reader) {
+    private boolean checkLassoContains(Blob b, PixelReader reader) {
         return lassoSelection.contains(b, reader);
     }
 

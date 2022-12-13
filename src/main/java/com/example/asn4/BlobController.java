@@ -160,10 +160,18 @@ public class BlobController {
                 currentState = State.READY;
                 handleLassoReleased();
 
-                // code below has to be before handleLassoReleased() bc when view is updated as a result of
-                // handleLassoReleased(), BlobView sends canvas snapshot needed for the code below
-                List<Blob> hitList = iModel.areaHit(model.getBlobs());  // get all the selected blobs using lasso tool
-                iModel.selectMultiple(hitList);
+
+                // get all the selected blobs using lasso tool
+                List<Blob> lassoHitList = iModel.lassoAreaHit(model.getBlobs());
+                List<Blob> rectHitList = iModel.rectAreaHit(model.getBlobs());
+
+                // choose the selection that got the bigger amount of blobs
+                if (lassoHitList.size() > rectHitList.size()) {
+                    iModel.selectMultiple(lassoHitList);
+                } else if (lassoHitList.size() < rectHitList.size()) {
+                    iModel.selectMultiple(rectHitList);
+                }
+
             }
         }
     }
@@ -192,6 +200,10 @@ public class BlobController {
     private void handleLassoReleased() {
         iModel.setLassoPathStatus(true);
     }
+
+
+
+    // METHODS THAT CALL INTERACTION MODEL TO STORE DATA NEEDED BY THE CONTROLLER
 
     /**
      * Stores the mouse position during a dragging event, during the tool selection drag event
