@@ -10,6 +10,7 @@ public class HelloApplication extends Application {
         MainUI uiRoot = new MainUI();
         Scene scene = new Scene(uiRoot);
         stage.setTitle("2D Targeting Practice");
+        stage.setResizable(false);
         stage.setScene(scene);
         stage.show();
     }
