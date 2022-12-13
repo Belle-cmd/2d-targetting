@@ -44,9 +44,7 @@ public class InteractionModel {
     private PixelReader canvasSnapshot;
 
 
-    /**
-     * Prepare subscribers that will listen to the interaction model (only the view for this lab)
-     */
+
     public InteractionModel() {
         blobSubscribers = new ArrayList<>();
         selectionSubscribers = new ArrayList<>();
@@ -148,10 +146,10 @@ public class InteractionModel {
     /**
      * The selected blobs in the controller are stored into the iModel's list of selected blobs, so that more
      * selected blobs can be stored
-     * @param hitList selected blobs created in the controller
+     * @param blobList selected blobs created in the controller
      */
-    public void selectMultiple(List<Blob> hitList) {
-        hitList.forEach(this::updateSelected);
+    public void selectMultiple(List<Blob> blobList) {
+        blobList.forEach(this::updateSelected);
         notifyBlobSubscribers();
     }
 
@@ -173,7 +171,6 @@ public class InteractionModel {
      */
     public void clearBlobSelection() {
         selectedBlobs.removeAll(selectedBlobs);
-        System.out.println(selectedBlobs);
         notifyBlobSubscribers();
     }
 

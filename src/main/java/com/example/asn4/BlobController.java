@@ -3,8 +3,18 @@ package com.example.asn4;
 import javafx.geometry.Point2D;
 import javafx.scene.input.MouseEvent;
 
+import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Store the state machines for the whole application. This class acts as the 'leader' that tell model classes what
+ * to store and change.
+ *
+ * This class also deals with 2 main list objects containing blobs: hitlist and nitPickedBlobs. hitlist involve blobs
+ * from the lasso/rectangle selection. NitPickedBlobs involve blobs chosen through mouse click alone or ctrl +
+ * mouse click. Both lists aren't stored in the interaction model since these are just helper objects that store blobs
+ * before selection/deselection (hitlist for tool selected blobs, nitPickedBlobs for blobs picked one by one).
+ */
 public class BlobController {
 
     private BlobModel model;
@@ -21,8 +31,9 @@ public class BlobController {
     /** Stores the mouse position at the end of a mouse press event, just before a mouse drag event starts */
     private double beforeShiftX, beforeShiftY;
 
-    /** list of all blobs within the lasso tool selection */
-    private List<Blob> hitList;
+    /** list of all blobs that hold blobs from ctrl key and mouse press selection. This is different from hitlist list
+     * where blobs are from the lasso/rectangle selection */
+    private List<Blob> nitPickedBlobs;
 
 
 
@@ -54,12 +65,25 @@ public class BlobController {
                 Blob b = model.whichHit(event.getX(), event.getY());
                 iModel.setSelected(b);
 
+                // Since selected area is actually a blob, add it to the nitPickedBlobs regardless if it was manually
+                // selected by mouse press or ctrl key is involved
+                nitPickedBlobs = new ArrayList<>();
+                nitPickedBlobs.add(b);
+
+                if (event.isControlDown()) {
+                    // enable new blobs to be added one by one to selection by pressing ctrl key with mouse press
+                    iModel.selectMultiple(nitPickedBlobs);
+                } else {
+                    if (!iModel.allSelectedBlobs(nitPickedBlobs)) {
+                        iModel.clearBlobSelection();
+                        iModel.selectMultiple(nitPickedBlobs);
+                    }
+                }
+
                 prevX = event.getX();
                 prevY = event.getY();
-
                 beforeShiftX = prevX;  // save the current mouse position before resizing blobs
                 beforeShiftY = prevY;
-
                 currentState = State.DRAGGING_BLOB;
             } else {
                 // user triggers a press event somewhere in the canvas
@@ -107,7 +131,6 @@ public class BlobController {
                     }
                 }
 
-//                model.moveBlob(iModel.getSelected(), dX,dY);
                 model.moveBlobs(iModel.getSelectedBlobs(), dX,dY);
             }
             case DRAGGING_SELECTION -> {
@@ -136,8 +159,7 @@ public class BlobController {
 
                 // code below has to be before handleLassoReleased() bc when view is updated as a result of
                 // handleLassoReleased(), BlobView sends canvas snapshot needed for the code below
-                hitList = iModel.areaHit(model.getBlobs());  // get all the selected blobs using lasso tool
-                System.out.println(hitList);
+                List<Blob> hitList = iModel.areaHit(model.getBlobs());  // get all the selected blobs using lasso tool
                 iModel.selectMultiple(hitList);
             }
         }
