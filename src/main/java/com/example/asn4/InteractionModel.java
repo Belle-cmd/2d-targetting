@@ -16,12 +16,6 @@ public class InteractionModel {
     /** Stores multiple selected blobs */
     private ArrayList<Blob> selectedBlobs;
 
-    /** radius of the circle following the mouse around */
-    private double areaRadius = 75;
-
-    /** stores a singly selected blob */
-    private Blob selected;
-
     /** Stores the mouse cursor (x, y) at drag during a tool selection event */
     private double dragMouseCursorX, dragMouseCursorY;
 
@@ -124,26 +118,6 @@ public class InteractionModel {
 
 
 
-    // METHODS FOR SINGLE BLOB SELECTION
-
-    public Blob getSelected() {
-        return selected;
-    }
-
-    public void setSelected(Blob b) {
-        selected = b;
-        notifyBlobSubscribers();
-    }
-
-    public void unselect() {
-        selected = null;
-        notifyBlobSubscribers();
-    }
-
-
-
-
-
     // METHODS FOR MULTIPLE BLOB SELECTION
 
     /**
@@ -182,7 +156,7 @@ public class InteractionModel {
      * Clears all the selected blobs stored in the iModel
      */
     public void clearBlobSelection() {
-        selectedBlobs.removeAll(selectedBlobs);
+        selectedBlobs.clear();
         notifyBlobSubscribers();
     }
 

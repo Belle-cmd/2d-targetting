@@ -51,7 +51,6 @@ public class BlobModel {
 
     public void deleteBlob(Blob blob) {
         blobs.remove(blob);
-        System.out.println("Blob deleted in the model");
         notifySubscribers();
     }
 

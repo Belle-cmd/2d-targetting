@@ -2,7 +2,6 @@ package com.example.asn4;
 
 import javafx.geometry.Point2D;
 import javafx.scene.input.MouseEvent;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,11 +48,13 @@ public class BlobController {
         iModel = newIModel;
     }
 
+    /**
+     * Delete selected blob(s)
+     */
     public void deleteBlobs() {
-        if (iModel.getSelected() != null) {
-            Blob singleBlob = iModel.getSelected();
-            model.deleteBlob(singleBlob);
-            iModel.unselect();
+        if (!iModel.getSelectedBlobs().isEmpty()) {
+            iModel.getSelectedBlobs().forEach(b -> model.deleteBlob(b));
+            iModel.clearBlobSelection();  // unselect ALL selected blobs in the iModel
         }
     }
 
@@ -63,7 +64,6 @@ public class BlobController {
                 // checks if user pressed a blob or not
 
                 Blob b = model.whichHit(event.getX(), event.getY());
-                iModel.setSelected(b);
 
                 // Since selected area is actually a blob, add it to the nitPickedBlobs regardless if it was manually
                 // selected by mouse press or ctrl key is involved
@@ -101,7 +101,6 @@ public class BlobController {
                     currentState = State.DRAGGING_SELECTION;
                 }
                 // when the user clicks on the background, blob selection disappears
-                iModel.unselect();
                 iModel.clearBlobSelection();
             }
         }
@@ -124,11 +123,15 @@ public class BlobController {
 
                 if (event.isShiftDown()) {
                     if (beforeShiftX < prevX) {
-                        iModel.getSelected().r += 1;  // at mouse drag to the right, increase blob size
+                        iModel.getSelectedBlobs().forEach(b -> {
+                            b.r += 1;  // at mouse drag to the right, increase blob size
+                        });
                     }
-                    if (beforeShiftX > prevX && iModel.getSelected().r != 5) {
-                        iModel.getSelected().r -= 1;  // at mouse drag to the left, decrease blob size
-                    }
+                    iModel.getSelectedBlobs().forEach(b -> {
+                        if (beforeShiftX > prevX && b.r != 5) {
+                            b.r -= 1;  // at mouse drag to the left, decrease blob size
+                        }
+                    });
                 }
 
                 model.moveBlobs(iModel.getSelectedBlobs(), dX,dY);
