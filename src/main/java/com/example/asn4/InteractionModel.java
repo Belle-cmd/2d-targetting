@@ -16,16 +16,11 @@ public class InteractionModel {
     /** Stores multiple selected blobs */
     private ArrayList<Blob> selectedBlobs;
 
-    /** stores the dynamically changing viewport based on user's resizing */
-    private double viewWidth;
-
     /** radius of the circle following the mouse around */
     private double areaRadius = 75;
 
     /** stores a singly selected blob */
     private Blob selected;
-
-
 
     /** Stores the mouse cursor (x, y) at drag during a tool selection event */
     private double dragMouseCursorX, dragMouseCursorY;
@@ -72,45 +67,62 @@ public class InteractionModel {
     }
 
 
-    // getter and setter methods
 
 
+
+    // GETTER AND SETTER METHODS FOR DATA STORED IN INTERACTION MODEL
 
     public ArrayList<Blob> getSelectedBlobs() {
         return selectedBlobs;
     }
 
+    /**
+     * Used to retrieve the mouse cursor during a drag event for a rectangle/lasso tool selection
+     * @return x mouse coordinate
+     */
     public double getDragMouseCursorX() {
         return dragMouseCursorX;
     }
 
+    /**
+     * Used to set a new mouse cursor value during a drag event for a rectangle/lasso tool selection
+     */
     public void setDragMouseCursorX(double dragMouseCursorX) {
         this.dragMouseCursorX = dragMouseCursorX;
     }
 
+    /**
+     * Used to retrieve the mouse cursor during a drag event for a rectangle/lasso tool selection
+     * @return Y mouse coordinate
+     */
     public double getDragMouseCursorY() {
         return dragMouseCursorY;
     }
 
+    /**
+     * Used to set a new mouse cursor value during a drag event for a rectangle/lasso tool selection
+     */
     public void setDragMouseCursorY(double dragMouseCursorY) {
         this.dragMouseCursorY = dragMouseCursorY;
     }
 
-    public double getMouseCursorX() {
-        return mouseCursorX;
-    }
-
+    /**
+     * Used to store the coordinates of the mouse when the selection tool is being used and a drag event is occurring
+     * @param mouseCursorX x mouse coordinate
+     */
     public void setMouseCursorX(double mouseCursorX) {
         this.mouseCursorX = mouseCursorX;
     }
 
-    public double getMouseCursorY() {
-        return mouseCursorY;
-    }
-
+    /**
+     * Used to store the coordinates of the mouse when the selection tool is being used and a drag event is occurring
+     * @param mouseCursorY y mouse coordinate
+     */
     public void setMouseCursorY(double mouseCursorY) {
         this.mouseCursorY = mouseCursorY;
     }
+
+
 
     // METHODS FOR SINGLE BLOB SELECTION
 

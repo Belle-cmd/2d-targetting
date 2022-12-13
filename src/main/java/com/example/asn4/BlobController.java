@@ -155,7 +155,7 @@ public class BlobController {
             }
             case DRAGGING_SELECTION -> {
                 currentState = State.READY;
-                handleLassoReleased(event);
+                handleLassoReleased();
 
                 // code below has to be before handleLassoReleased() bc when view is updated as a result of
                 // handleLassoReleased(), BlobView sends canvas snapshot needed for the code below
@@ -185,9 +185,8 @@ public class BlobController {
 
     /**
      * End the lasso tool
-     * @param e mouse event
      */
-    private void handleLassoReleased(MouseEvent e) {
+    private void handleLassoReleased() {
         iModel.setLassoPathStatus(true);
     }
 
@@ -201,7 +200,7 @@ public class BlobController {
     }
 
     /**
-     * Storse the mouse position during a mouse movement event on the canvas, for checking if the mouse is hovering
+     * Store the mouse position during a mouse movement event on the canvas, for checking if the mouse is hovering
      * on a bitmap coordinate
      * @param e mouse event
      */
