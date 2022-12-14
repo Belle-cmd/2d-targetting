@@ -103,18 +103,17 @@ public class BlobController {
                 if (event.isShiftDown()) {
                     // enable blob creation at shift key press (remove if-statement for multiple selections)
                     currentState = State.PREPARE_CREATE;
-                }
-
-                if (event.isControlDown()) {
+                }else if (event.isControlDown()) {
                     // when mouse press occurs in canvas, saves the current mouse position
                     // for drawing the rectangle selection tool
                     iModel.setRectStartingPoint(event.getX(), event.getY());
                     handleLassoPressed(event);
 
                     currentState = State.DRAGGING_SELECTION;
+                } else {
+                    // when the user clicks on the background, blob selection disappears
+                    iModel.clearBlobSelection();
                 }
-                // when the user clicks on the background, blob selection disappears
-                iModel.clearBlobSelection();
             }
         }
     }
