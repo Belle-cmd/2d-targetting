@@ -34,6 +34,33 @@ public class BlobModel {
 
     // methods for manipulating data
 
+    /**
+     * Used by CreateCommand to create a new blob
+     * @param newX new blob x coordinate
+     * @param newY new blob y coordinate
+     * @return newly created blob
+     */
+    public Blob createBlob(double newX, double newY) {
+        Blob b = new Blob(newX, newY);
+        blobs.add(b);
+        notifySubscribers();
+        return b;
+    }
+
+    /**
+     * Adds a new blob to the list of all blobs in the application, requiring the blob object as an argument
+     * @param newBlob blob object to be stored
+     */
+    public void addBlob(Blob newBlob) {
+        blobs.add(newBlob);
+        notifySubscribers();
+    }
+
+    /**
+     * Adds a new blob to the list of all blobs in the application, requiring coordinates as an argument
+     * @param x
+     * @param y
+     */
     public void addBlob(double x, double y) {
         blobs.add(new Blob(x,y));
         notifySubscribers();

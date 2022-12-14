@@ -1,5 +1,6 @@
 package com.example.asn4;
 
+import com.example.asn4.Commands.CreateCommand;
 import com.example.asn4.Commands.TargetCommand;
 import javafx.geometry.Point2D;
 import javafx.scene.image.PixelReader;
@@ -322,6 +323,24 @@ public class InteractionModel {
 
     // METHODS FOR UNDO/REDO STACKS
 
+    /**
+     * Add a new task command to the undo stack
+     * @param targetCommand new task command object to be pushed
+     */
+    public void addToUndoStack(TargetCommand targetCommand) {
+        undoStack.push(targetCommand);
+        notifyBlobSubscribers();
+    }
 
+    public void handleUndo() {
+        if (undoStack.empty()) {
+            System.out.println("Nothing more to undo!");
+        } else {
+            TargetCommand bc = undoStack.pop();
+            bc.undo();
+            redoStack.push(bc);
+            notifyBlobSubscribers();
+        }
+    }
 }
 

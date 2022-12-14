@@ -1,5 +1,6 @@
 package com.example.asn4;
 
+import com.example.asn4.Commands.CreateCommand;
 import javafx.geometry.Point2D;
 import javafx.scene.input.MouseEvent;
 import java.util.ArrayList;
@@ -150,7 +151,11 @@ public class BlobController {
             // user releases the mouse while holding a blob; place blob into the canvas
             // model will increase its blob which will initiate view to draw blob on canvas
             case PREPARE_CREATE -> {
-                model.addBlob(event.getX(),event.getY());
+//                model.addBlob(event.getX(),event.getY());
+                CreateCommand cc = new CreateCommand(model, event.getX(), event.getY());
+                cc.doIt();  // also creates a new blob and adds it to model
+                iModel.addToUndoStack(cc);
+
                 currentState = State.READY;
             }
             case DRAGGING_BLOB -> {
@@ -222,5 +227,12 @@ public class BlobController {
     public void storeMovingCursor(MouseEvent e) {
         iModel.setMouseCursorX(e.getX());
         iModel.setMouseCursorY(e.getY());
+    }
+
+    /**
+     * Calls the interaction model's method to perform undo operations
+     */
+    public void handleUndo() {
+        iModel.handleUndo();
     }
 }
