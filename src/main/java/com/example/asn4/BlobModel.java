@@ -76,6 +76,13 @@ public class BlobModel {
         notifySubscribers();
     }
 
+    /**
+     * Redraws the blobs to reflect visual changes
+     */
+    public void redrawBlobs() {
+        notifySubscribers();
+    }
+
     public void deleteBlob(Blob blob) {
         blobs.remove(blob);
         notifySubscribers();

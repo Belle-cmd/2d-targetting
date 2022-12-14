@@ -331,10 +331,6 @@ public class InteractionModel {
             tc.undo();
             redoStack.push(tc);
             notifyBlobSubscribers();
-
-            System.out.println("----- NEW SECTION -----");
-            printUndoStack();
-            printRedoStack();
         }
     }
 
@@ -346,10 +342,6 @@ public class InteractionModel {
             tc.doIt();
             undoStack.push(tc);
             notifyBlobSubscribers();
-
-            System.out.println("----- NEW SECTION -----");
-            printRedoStack();
-            printUndoStack();
         }
     }
 
@@ -360,7 +352,6 @@ public class InteractionModel {
     public void addToUndoStack(TargetCommand targetCommand) {
         undoStack.push(targetCommand);
         notifyBlobSubscribers();
-//        printUndoStack();
     }
 
     /**

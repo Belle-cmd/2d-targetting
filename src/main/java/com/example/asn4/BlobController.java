@@ -3,6 +3,7 @@ package com.example.asn4;
 import com.example.asn4.Commands.CreateCommand;
 import com.example.asn4.Commands.DeleteCommand;
 import com.example.asn4.Commands.MoveCommand;
+import com.example.asn4.Commands.ResizeCommand;
 import javafx.geometry.Point2D;
 import javafx.scene.input.MouseEvent;
 import java.util.ArrayList;
@@ -27,7 +28,7 @@ public class BlobController {
 
     private  double dX,dY;
 
-    private enum State {READY,PREPARE_CREATE, DRAGGING_BLOB, DRAGGING_SELECTION}  // from interaction state model
+    private enum State {READY,PREPARE_CREATE, DRAGGING_BLOB, RESIZING_BLOB, DRAGGING_SELECTION}
     State currentState = State.READY;
 
     /** Stores the mouse position at the end of a mouse press event, just before a mouse drag event starts */
@@ -57,7 +58,6 @@ public class BlobController {
     public void deleteBlobs() {
         if (!iModel.getSelectedBlobs().isEmpty()) {
             iModel.getSelectedBlobs().forEach(b -> {
-//                model.deleteBlob(b)
                 DeleteCommand dc = new DeleteCommand(model, b);
                 dc.doIt();
                 iModel.addToUndoStack(dc);
@@ -78,21 +78,26 @@ public class BlobController {
                 nitPickedBlobs = new ArrayList<>();
                 nitPickedBlobs.add(b);
 
+                prevX = event.getX();
+                prevY = event.getY();
+
                 if (event.isControlDown()) {
                     // enable new blobs to be added one by one to selection by pressing ctrl key with mouse press
                     iModel.selectMultiple(nitPickedBlobs);
+                } else if (event.isShiftDown()) {
+                    b.initialRadius = b.r;
+                    beforeDragX = prevX;  // save the current mouse position before resizing blobs
+                    beforeDragY = prevY;
+                    currentState = State.RESIZING_BLOB;
                 } else {
                     if (!iModel.allSelectedBlobs(nitPickedBlobs)) {
                         iModel.clearBlobSelection();
                         iModel.selectMultiple(nitPickedBlobs);
                     }
+                    beforeDragX = prevX;  // save the current mouse position before resizing blobs
+                    beforeDragY = prevY;
+                    currentState = State.DRAGGING_BLOB;
                 }
-
-                prevX = event.getX();
-                prevY = event.getY();
-                beforeDragX = prevX;  // save the current mouse position before resizing blobs
-                beforeDragY = prevY;
-                currentState = State.DRAGGING_BLOB;
             } else {
                 // user triggers a press event somewhere in the canvas
                 if (event.isShiftDown()) {
@@ -115,34 +120,31 @@ public class BlobController {
     }
 
     public void handleDragged(MouseEvent event) {
+        dX = event.getX() - prevX;
+        dY = event.getY() - prevY;
+        prevX = event.getX();
+        prevY = event.getY();
+
         switch (currentState) {
             case PREPARE_CREATE -> {
                 // go back to ready state since user just pressed the canvas (not a blob) and dragged somewhere
                 currentState = State.READY;
             }
             case DRAGGING_BLOB -> {
-                // the user will either move blob(s) or resize blob(s)
-
-                // update the coordinates to reposition the blob
-                dX = event.getX() - prevX;
-                dY = event.getY() - prevY;
-                prevX = event.getX();
-                prevY = event.getY();
-
-                if (event.isShiftDown()) {
-                    if (beforeDragX < prevX) {
-                        iModel.getSelectedBlobs().forEach(b -> {
-                            b.r += 1;  // at mouse drag to the right, increase blob size
-                        });
-                    }
+                model.moveBlobs(iModel.getSelectedBlobs(), dX,dY);
+            }
+            case RESIZING_BLOB -> {
+                if (beforeDragX < prevX) {
                     iModel.getSelectedBlobs().forEach(b -> {
-                        if (beforeDragX > prevX && b.r != 5) {
-                            b.r -= 1;  // at mouse drag to the left, decrease blob size
-                        }
+                        b.r += 1;  // at mouse drag to the right, increase blob size
                     });
                 }
-
-                model.moveBlobs(iModel.getSelectedBlobs(), dX,dY);
+                iModel.getSelectedBlobs().forEach(b -> {
+                    if (beforeDragX > prevX && b.r != 5) {
+                        b.r -= 1;  // at mouse drag to the left, decrease blob size
+                    }
+                });
+                model.redrawBlobs();
             }
             case DRAGGING_SELECTION -> {
                 // the user will use either the lasso tool or the rectangle tool to select/unselect blobs
@@ -170,17 +172,25 @@ public class BlobController {
                 double yChange = event.getY() - beforeDragY;
 
                 iModel.getSelectedBlobs().forEach(b -> {
-                    MoveCommand mc = new MoveCommand(model, b, xChange, yChange);
-                    iModel.addToUndoStack(mc);
+                    if (!(xChange == 0 && yChange == 0)) {
+                        // if no change in coordinates occur, user just performed a select, no need to record
+                        // only record actual movements that occur for the undo stack
+                        MoveCommand mc = new MoveCommand(model, b, xChange, yChange);
+                        iModel.addToUndoStack(mc);
+                    }
                 });
-
-
+                currentState = State.READY;
+            }
+            case RESIZING_BLOB -> {
+                iModel.getSelectedBlobs().forEach(b -> {
+                    ResizeCommand rc = new ResizeCommand(model, b);
+                    iModel.addToUndoStack(rc);
+                });
                 currentState = State.READY;
             }
             case DRAGGING_SELECTION -> {
                 currentState = State.READY;
                 handleLassoReleased();
-
 
                 // get all the selected blobs using lasso tool
                 List<Blob> lassoHitList = iModel.lassoAreaHit(model.getBlobs());

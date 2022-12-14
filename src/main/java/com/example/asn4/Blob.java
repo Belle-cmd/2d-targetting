@@ -3,7 +3,10 @@ package com.example.asn4;
 public class Blob {
     public double x,y;
 
-    double r;
+    public double r;
+
+    /** The radius before changes in its size occur */
+    public double initialRadius;
 
     /** Stands for the order number of blobs created */
     private static int orderCounter = 0;
@@ -20,6 +23,7 @@ public class Blob {
         x = nx;
         y = ny;
         r = 50;
+        initialRadius = r;
         orderCounter++;
         counter = orderCounter;
     }
