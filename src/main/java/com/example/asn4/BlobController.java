@@ -1,6 +1,7 @@
 package com.example.asn4;
 
 import com.example.asn4.Commands.CreateCommand;
+import com.example.asn4.Commands.DeleteCommand;
 import com.example.asn4.Commands.MoveCommand;
 import javafx.geometry.Point2D;
 import javafx.scene.input.MouseEvent;
@@ -55,7 +56,12 @@ public class BlobController {
      */
     public void deleteBlobs() {
         if (!iModel.getSelectedBlobs().isEmpty()) {
-            iModel.getSelectedBlobs().forEach(b -> model.deleteBlob(b));
+            iModel.getSelectedBlobs().forEach(b -> {
+//                model.deleteBlob(b)
+                DeleteCommand dc = new DeleteCommand(model, b);
+                dc.doIt();
+                iModel.addToUndoStack(dc);
+            });
             iModel.clearBlobSelection();  // unselect ALL selected blobs in the iModel
         }
     }

@@ -327,11 +327,14 @@ public class InteractionModel {
         if (undoStack.empty()) {
             System.out.println("Nothing more to undo!");
         } else {
-            TargetCommand bc = undoStack.pop();
-            bc.undo();
-            redoStack.push(bc);
+            TargetCommand tc = undoStack.pop();
+            tc.undo();
+            redoStack.push(tc);
             notifyBlobSubscribers();
+
+            System.out.println("----- NEW SECTION -----");
             printUndoStack();
+            printRedoStack();
         }
     }
 
@@ -339,11 +342,14 @@ public class InteractionModel {
         if (redoStack.empty()) {
             System.out.println("Nothing more to redo!");
         } else {
-            TargetCommand bc = redoStack.pop();
-            bc.doIt();
-            undoStack.push(bc);
+            TargetCommand tc = redoStack.pop();
+            tc.doIt();
+            undoStack.push(tc);
             notifyBlobSubscribers();
+
+            System.out.println("----- NEW SECTION -----");
             printRedoStack();
+            printUndoStack();
         }
     }
 
@@ -376,6 +382,7 @@ public class InteractionModel {
         redoStack.forEach(item -> {
             System.out.println("    " + item.toString());
         });
+        System.out.println();
     }
 }
 
