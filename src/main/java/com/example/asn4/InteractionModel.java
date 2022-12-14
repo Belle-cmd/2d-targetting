@@ -323,15 +323,6 @@ public class InteractionModel {
 
     // METHODS FOR UNDO/REDO STACKS
 
-    /**
-     * Add a new task command to the undo stack
-     * @param targetCommand new task command object to be pushed
-     */
-    public void addToUndoStack(TargetCommand targetCommand) {
-        undoStack.push(targetCommand);
-        notifyBlobSubscribers();
-    }
-
     public void handleUndo() {
         if (undoStack.empty()) {
             System.out.println("Nothing more to undo!");
@@ -340,7 +331,29 @@ public class InteractionModel {
             bc.undo();
             redoStack.push(bc);
             notifyBlobSubscribers();
+//            printUndoStack();
         }
+    }
+
+    /**
+     * Add a new task command to the undo stack
+     * @param targetCommand new task command object to be pushed
+     */
+    public void addToUndoStack(TargetCommand targetCommand) {
+        undoStack.push(targetCommand);
+        notifyBlobSubscribers();
+//        printUndoStack();
+    }
+
+    /**
+     * Prints all the current items in the undo stack
+     */
+    public void printUndoStack() {
+        System.out.println("UNDO STACK:");
+        undoStack.forEach(item -> {
+            System.out.println("    " + item.toString());
+        });
+        System.out.println();
     }
 }
 

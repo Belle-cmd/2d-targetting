@@ -1,6 +1,7 @@
 package com.example.asn4;
 
 import com.example.asn4.Commands.CreateCommand;
+import com.example.asn4.Commands.MoveCommand;
 import javafx.geometry.Point2D;
 import javafx.scene.input.MouseEvent;
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ public class BlobController {
     State currentState = State.READY;
 
     /** Stores the mouse position at the end of a mouse press event, just before a mouse drag event starts */
-    private double beforeShiftX, beforeShiftY;
+    private double beforeDragX, beforeDragY;
 
     /** list of all blobs that hold blobs from ctrl key and mouse press selection. This is different from hitlist list
      * where blobs are from the lasso/rectangle selection */
@@ -83,8 +84,8 @@ public class BlobController {
 
                 prevX = event.getX();
                 prevY = event.getY();
-                beforeShiftX = prevX;  // save the current mouse position before resizing blobs
-                beforeShiftY = prevY;
+                beforeDragX = prevX;  // save the current mouse position before resizing blobs
+                beforeDragY = prevY;
                 currentState = State.DRAGGING_BLOB;
             } else {
                 // user triggers a press event somewhere in the canvas
@@ -123,13 +124,13 @@ public class BlobController {
                 prevY = event.getY();
 
                 if (event.isShiftDown()) {
-                    if (beforeShiftX < prevX) {
+                    if (beforeDragX < prevX) {
                         iModel.getSelectedBlobs().forEach(b -> {
                             b.r += 1;  // at mouse drag to the right, increase blob size
                         });
                     }
                     iModel.getSelectedBlobs().forEach(b -> {
-                        if (beforeShiftX > prevX && b.r != 5) {
+                        if (beforeDragX > prevX && b.r != 5) {
                             b.r -= 1;  // at mouse drag to the left, decrease blob size
                         }
                     });
@@ -159,6 +160,15 @@ public class BlobController {
                 currentState = State.READY;
             }
             case DRAGGING_BLOB -> {
+                double xChange = event.getX() - beforeDragX;
+                double yChange = event.getY() - beforeDragY;
+
+                iModel.getSelectedBlobs().forEach(b -> {
+                    MoveCommand mc = new MoveCommand(model, b, xChange, yChange);
+                    iModel.addToUndoStack(mc);
+                });
+
+
                 currentState = State.READY;
             }
             case DRAGGING_SELECTION -> {

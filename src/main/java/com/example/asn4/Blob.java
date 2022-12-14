@@ -1,7 +1,7 @@
 package com.example.asn4;
 
 public class Blob {
-    double x,y;
+    public double x,y;
 
     double r;
 
