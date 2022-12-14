@@ -331,7 +331,19 @@ public class InteractionModel {
             bc.undo();
             redoStack.push(bc);
             notifyBlobSubscribers();
-//            printUndoStack();
+            printUndoStack();
+        }
+    }
+
+    public void handleRedo() {
+        if (redoStack.empty()) {
+            System.out.println("Nothing more to redo!");
+        } else {
+            TargetCommand bc = redoStack.pop();
+            bc.doIt();
+            undoStack.push(bc);
+            notifyBlobSubscribers();
+            printRedoStack();
         }
     }
 
@@ -354,6 +366,16 @@ public class InteractionModel {
             System.out.println("    " + item.toString());
         });
         System.out.println();
+    }
+
+    /**
+     * Prints all the current items in the redo stack
+     */
+    private void printRedoStack() {
+        System.out.println("REDO STACK:");
+        redoStack.forEach(item -> {
+            System.out.println("    " + item.toString());
+        });
     }
 }
 

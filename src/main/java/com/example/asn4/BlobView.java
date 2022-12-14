@@ -195,6 +195,7 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
             }
             if (e.isControlDown() && e.getCode() == KeyCode.R) {
                 System.out.println("ctrl key + R");
+                controller.handleRedo();
             }
         });
         myCanvas.setOnMousePressed(controller::handlePressed);

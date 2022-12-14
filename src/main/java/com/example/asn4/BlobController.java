@@ -240,9 +240,16 @@ public class BlobController {
     }
 
     /**
-     * Calls the interaction model's method to perform undo operations
+     * Perform undo operations
      */
     public void handleUndo() {
         iModel.handleUndo();
+    }
+
+    /**
+     * Perform redo operations
+     */
+    public void handleRedo() {
+        iModel.handleRedo();
     }
 }
