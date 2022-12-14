@@ -1,10 +1,12 @@
 package com.example.asn4;
 
+import com.example.asn4.Commands.TargetCommand;
 import javafx.geometry.Point2D;
 import javafx.scene.image.PixelReader;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 public class InteractionModel {
 
@@ -32,6 +34,12 @@ public class InteractionModel {
      * snapshot image stored in this var. This is done so that blobs within the selection can be distinguished */
     private PixelReader lassoCanvasSnapshot;
 
+    /** Stores the command objects for undo */
+    private Stack<TargetCommand> undoStack;
+
+    /** Stores the command objects for redo */
+    private Stack<TargetCommand> redoStack;
+
 
 
     public InteractionModel() {
@@ -42,6 +50,9 @@ public class InteractionModel {
         lassoSelection = new LassoSelection();
         rectSelection = new RectangleSelection();
         lassoCanvasSnapshot = null;
+
+        undoStack = new Stack<>();
+        redoStack = new Stack<>();
     }
 
 
@@ -306,6 +317,11 @@ public class InteractionModel {
     private boolean checkLassoContains(Blob b, PixelReader reader) {
         return lassoSelection.contains(b, reader);
     }
+
+
+
+    // METHODS FOR UNDO/REDO STACKS
+
 
 }
 
