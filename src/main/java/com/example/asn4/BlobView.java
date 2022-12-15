@@ -186,14 +186,20 @@ public class BlobView extends StackPane implements BlobModelListener, IModelList
     public void setController(BlobController controller) {
         myCanvas.setFocusTraversable(true);
         myCanvas.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.DELETE) {
+            KeyCode key = e.getCode();
+            if (key == KeyCode.DELETE) {
+                System.out.println("ctrl + " + key.getName());  // for debugging purposes
                 controller.deleteBlobs();
-            }
-            if (e.isControlDown() && e.getCode() == KeyCode.Z) {
+                System.out.println("ctrl + " + key.getName());
+            } else if (e.isControlDown() && key == KeyCode.Z) {
+                System.out.println("ctrl + " + key.getName());
                 controller.handleUndo();
-            }
-            if (e.isControlDown() && e.getCode() == KeyCode.R) {
+            } else if (e.isControlDown() && key == KeyCode.R) {
+                System.out.println("ctrl + " + key.getName());
                 controller.handleRedo();
+            } else if ((key == KeyCode.X || key == KeyCode.C || key == KeyCode.V) && e.isControlDown()) {
+                System.out.println("ctrl + " + key.getName());
+                controller.handleCutCopyPaste(e);
             }
         });
         myCanvas.setOnMousePressed(controller::handlePressed);

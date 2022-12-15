@@ -5,6 +5,7 @@ import com.example.asn4.Commands.DeleteCommand;
 import com.example.asn4.Commands.MoveCommand;
 import com.example.asn4.Commands.ResizeCommand;
 import javafx.geometry.Point2D;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +39,8 @@ public class BlobController {
      * where blobs are from the lasso/rectangle selection */
     private List<Blob> nitPickedBlobs;
 
+    /** Used to store the previously selected key between X, C, and V */
+    private String prevKey;
 
 
     public BlobController() {
@@ -64,6 +67,29 @@ public class BlobController {
             });
             iModel.clearBlobSelection();  // unselect ALL selected blobs in the iModel
         }
+    }
+
+    /**
+     * Prepare clipboard to perform a cut/copy/paste
+     * @param e event
+     */
+    public void handleCutCopyPaste(KeyEvent e) {
+        if (iModel.getSelectedBlobs().isEmpty()) {
+            System.out.println("ctrl " + e.getCode() + " pressed while selection doesn't exist!");
+            return;  // end the function
+        }
+
+        switch (e.getCode().getName()) {
+            case "C" -> {
+                iModel.setClipboardList(iModel.getSelectedBlobs());
+            }
+            case "X" -> {
+                iModel.setClipboardList(iModel.getSelectedBlobs());
+                deleteBlobs();  // enable undo/redo of blob deletion in model
+            }
+            case "V" -> iModel.getClipboardList().forEach(b -> model.addBlob(b));
+        }
+        prevKey = e.getCode().getName();
     }
 
     public void handlePressed(MouseEvent event) {

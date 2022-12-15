@@ -1,6 +1,5 @@
 package com.example.asn4;
 
-import com.example.asn4.Commands.CreateCommand;
 import com.example.asn4.Commands.TargetCommand;
 import javafx.geometry.Point2D;
 import javafx.scene.image.PixelReader;
@@ -41,6 +40,8 @@ public class InteractionModel {
     /** Stores the command objects for redo */
     private Stack<TargetCommand> redoStack;
 
+    /** Clipboard storing the list of blobs to be copy/cut/pasted */
+    private TargetClipboard targetClipboard;
 
 
     public InteractionModel() {
@@ -54,6 +55,8 @@ public class InteractionModel {
 
         undoStack = new Stack<>();
         redoStack = new Stack<>();
+        targetClipboard = new TargetClipboard();
+
     }
 
 
@@ -374,6 +377,33 @@ public class InteractionModel {
             System.out.println("    " + item.toString());
         });
         System.out.println();
+    }
+
+
+
+    // METHODS FOR CLIPBOARD
+
+    /**
+     * Retrieve the current list of blobs to be copy/pasted/cut
+     * @return list of blobs
+     */
+    public ArrayList<Blob> getClipboardList() {
+        return targetClipboard.getCopiedSelection();
+    }
+
+    /**
+     * Store a new list of selected blobs in the clip board to enable copy/paste/cut
+     * @param newBlobList new list of selected blobs
+     */
+    public void setClipboardList(ArrayList<Blob> newBlobList) {
+        targetClipboard.setCopiedSelection(newBlobList);
+    }
+
+    /**
+     * Delete the current list of blobs to be copy/pasted/cut
+     */
+    public void clearClipboardList() {
+        targetClipboard.clearSelection();
     }
 }
 
